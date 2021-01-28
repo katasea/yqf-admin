@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.main.dao.platform.ResourcesInfoDao">
+    <resultMap id="BaseResultMap" type="com.main.pojo.platform.ResourcesInfo">
+        <id column="pkid" property="pkid" jdbcType="VARCHAR"/>
+        <result column="resid" property="resid" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="resurl" property="resurl" jdbcType="VARCHAR"/>
+        <result column="parentid" property="parentid" jdbcType="VARCHAR"/>
+        <result column="isleaf" property="isleaf" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+        <result column="sort" property="sort" jdbcType="INTEGER"/>
+        <result column="fa" property="fa" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    pkid,resid,name,resurl,parentid,isleaf,type,sort,fa
+  </sql>
+    <sql id="Add_Column_List">
+    pkid,resid,name,resurl,parentid,isleaf,type,sort,fa
+  </sql>
+    <select id="selectBypkid" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_RESOURCE
+        where pkid = #{id}
+    </select>
+    <select id="getAutoGeneralID" resultType="java.util.Map">
+        select max(pkid) as id
+        from PM_RESOURCE
+        where 1=1
+        <choose>
+            <when test="parentId != null and parentId != 'root' and parentId != 'null' and parentId != '' ">
+                and parentid = #{parentId}
+            </when>
+            <otherwise>
+                and (parentid is null or parentid = '' or parentid = '0')
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getCount" resultType="java.util.Map">
+        select count(1) as count
+        from PM_RESOURCE
+        where 1=1
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                resid like '${keyword}%'
+                or
+                name like '%${keyword}%'
+                or
+                resurl like '%${keyword}%' )
+            </when>
+        </choose>
+    </select>
+
+    <select id="getAll" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_RESOURCE
+        where 1=1
+        order by sort
+    </select>
+
+    <!--如果不是带年份的表，需要自己加入年份过滤，这里不好知道年份字段的数据库名称 -->
+    <select id="validator" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_RESOURCE
+        where 1=1 and ${key} = #{value}
+    </select>
+
+
+    <select id="get" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_RESOURCE
+        where 1=1
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and isleaf = 1
+                and (
+                resid like '${keyword}%'
+                or
+                name like '%${keyword}%'
+                or
+                resurl like '%${keyword}%'
+                )
+            </when>
+            <otherwise>
+                <choose>
+                    <when test="node != null and node != 'root' and node != 'null' and node != '' ">
+                        and parentid = #{node}
+                    </when>
+                    <otherwise>
+                        and (parentid is null or parentid = '' or parentid = '0')
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+
+        order by pkid
+    </select>
+
+    <select id="getPage" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        (
+            select<include refid="Base_Column_List"/>,row_number() over
+            (
+            order by
+            pkid asc
+            ) n
+            from PM_RESOURCE where 1=1
+            <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                resid like '${keyword}%'
+                or
+                name like '%${keyword}%'
+                or
+                resurl like '%${keyword}%'
+                )
+            </when>
+            </choose>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+
+    </select>
+
+    <insert id="insert" parameterType="map">
+        insert into
+        PM_RESOURCE
+        (<include refid="Add_Column_List"/>)
+        values(#{pkid},#{resid},#{name},#{resurl},#{parentid},#{isleaf},#{type},#{sort},#{fa})
+    </insert>
+
+    <update id="update" parameterType="map">
+  		update
+	    PM_RESOURCE
+  		set
+				<!--resid = #{resid},-->
+				name = #{name},
+				resurl = #{resurl},
+				fa = #{fa}  		where pkid = #{whereId}
+  </update>
+    <update id="changeLeaf" parameterType="map">
+        update
+            PM_RESOURCE
+        set isleaf = #{value}
+        where pkid = #{id}
+    </update>
+    <delete id="deleteByPrimaryKey" parameterType="map">
+	    delete from
+	    PM_RESOURCE
+	    where pkid = #{id}
+            or parentid = #{id}
+  </delete>
+    <!-- 加载指定用户的资源信息-->
+    <select id="loadUserRes" resultType="com.main.pojo.platform.ResourcesInfo">
+
+    </select>
+    <!-- 加载所有资源信息-->
+    <select id="queryAll" resultType="com.main.pojo.platform.ResourcesInfo">
+
+    </select>
+    <!-- 通过角色主键获取资源菜单 -->
+    <select id="getResourcesByRole" resultType="java.util.Map">
+        select * from dbo.pm_role_res where rolepkid = #{rolepkid}
+    </select>
+    <!-- 通过用户主键获取资源菜单 -->
+    <select id="getResourcesByUser" resultType="java.util.Map">
+        select * from dbo.pm_user_res where userpkid = #{userpkid}
+    </select>
+</mapper>

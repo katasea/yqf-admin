@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.main.dao.platform.NoticeInfoDao">
+    <resultMap id="BaseResultMap" type="com.main.pojo.platform.NoticeInfo">
+        <id column="pkid" property="pkid" jdbcType="VARCHAR"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="senttime" property="senttime" jdbcType="CHAR"/>
+        <result column="fromwho" property="fromwho" jdbcType="VARCHAR"/>
+        <result column="fromwhoname" property="fromwhoname" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    pkid,title,content,senttime,fromwho,fromwhoname,type
+    </sql>
+    <sql id="Add_Column_List">
+    pkid,title,content,senttime,fromwho,fromwhoname,type
+    </sql>
+    <select id="selectBypkid" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_NOTICE
+        where pkid = #{id}
+    </select>
+    <select id="getAutoGeneralID" resultType="java.util.Map">
+        select max(pkid) as id
+        from PM_NOTICE
+        where 1=1
+    </select>
+    <select id="getCount" resultType="java.util.Map">
+        select count(1) as count
+        from PM_NOTICE
+        <if test="view == '1' or view == 1">
+            A LEFT JOIN PM_USER_NOTICE B ON A.pkid = B.noticepkid
+            AND B.userpkid = #{userid}
+        </if>
+        where 1=1
+        <if test="view == '1' or view == 1">
+            and B.userpkid = #{userid} and B.state = #{state}
+        </if>
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                title like '%${keyword}%'
+                or
+                content like '%${keyword}%'
+                or
+                senttime like '%${keyword}%'
+                or
+                fromwho like '%${keyword}%'
+                or
+                fromwhoname like '%${keyword}%'
+                or
+                type like '${keyword}%'
+                )
+            </when>
+        </choose>
+    </select>
+
+    <select id="getAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_NOTICE
+        where 1=1
+        order by senttime desc, pkid desc
+    </select>
+
+    <!--如果不是带年份的表，需要自己加入年份过滤，这里不好知道年份字段的数据库名称 -->
+    <select id="validator" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_NOTICE
+        where 1=1 and ${key} = #{value}
+    </select>
+
+    <select id="get" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_NOTICE
+        where 1=1
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+
+                and (
+                title like '%${keyword}%'
+                or
+                content like '%${keyword}%'
+                or
+                senttime like '%${keyword}%'
+                or
+                fromwho like '%${keyword}%'
+                or
+                fromwhoname like '%${keyword}%'
+                or
+                type like '${keyword}%'
+                )
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+        order by senttime desc, pkid desc
+    </select>
+
+    <select id="getPage" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        (
+            select
+            <include refid="Base_Column_List"/>
+            ,row_number() over (order by senttime desc, pkid desc) n
+            from PM_NOTICE
+            <if test="view == '1' or view == 1">
+                A LEFT JOIN PM_USER_NOTICE B ON A.pkid = B.noticepkid
+                AND B.userpkid = #{userid}
+            </if>
+            where 1=1
+            <if test="view == '1' or view == 1">
+                and B.userpkid = #{userid} and B.state = #{state}
+            </if>
+            <choose>
+                <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                    and (
+                    title like '%${keyword}%'
+                    or
+                    content like '%${keyword}%'
+                    or
+                    senttime like '%${keyword}%'
+                    or
+                    fromwho like '%${keyword}%'
+                    or
+                    fromwhoname like '%${keyword}%'
+                    or
+                    type like '${keyword}%'
+                    )
+                </when>
+            </choose>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+    </select>
+
+    <insert id="insert" parameterType="map">
+        insert into PM_NOTICE (<include refid="Add_Column_List"/>)
+        values(#{pkid},#{title},#{content},#{senttime},#{fromwho},#{fromwhoname},#{type})
+    </insert>
+
+    <update id="update" parameterType="map">
+        update PM_NOTICE set
+                title = #{title},
+                content = #{content},
+                senttime = #{senttime},
+                fromwho = #{fromwho},
+                fromwhoname = #{fromwhoname},
+                type = #{type}        where pkid = #{whereId}
+    </update>
+    <delete id="deleteByPrimaryKey" parameterType="map">
+        delete from PM_NOTICE
+        where pkid = #{id}
+    </delete>
+    <delete id="deleteAll">
+          delete from PM_NOTICE where 1=1
+    </delete>
+
+    <!-- 维护通知消息与用户的关联关系 -->
+    <update id="saveUserNoticeRela">
+      DELETE FROM PM_USER_NOTICE WHERE NOTICEPKID = #{noticeInfo.pkid};
+      INSERT INTO PM_USER_NOTICE(USERPKID,NOTICEPKID,STATE)
+      SELECT USERID,#{noticeInfo.pkid},${state} FROM PM_USER WHERE ENABLE != '3'
+    </update>
+
+    <select id="getNoticeWithState" resultMap="BaseResultMap">
+        SELECT A.*
+        FROM PM_NOTICE A LEFT JOIN PM_USER_NOTICE B ON A.PKID = B.NOTICEPKID
+        WHERE 1=1 AND B.USERPKID = #{userid} AND B.STATE = ${state}
+        ORDER BY A.SENTTIME desc, A.PKID desc
+    </select>
+
+    <delete id="deleteUserNoticeRela">
+        DELETE FROM PM_USER_NOTICE WHERE NOTICEPKID = #{noticepkid}
+    </delete>
+
+    <update id="updateUserNoticeState">
+        UPDATE PM_USER_NOTICE SET STATE = ${state} WHERE 1=1 AND USERPKID = #{userid}
+        <if test="noticepkid != 'ALL'">
+            AND NOTICEPKID = #{noticepkid}
+        </if>
+    </update>
+</mapper>

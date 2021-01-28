@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.main.dao.platform.SystemDao">
+    <resultMap id="UserInfo" type="com.main.pojo.platform.UserInfo" >
+        <result column="userid" property="userid" jdbcType="VARCHAR" />
+        <result column="username" property="username" jdbcType="VARCHAR" />
+        <result column="password" property="password" jdbcType="VARCHAR" />
+        <result column="enable" property="enable" jdbcType="VARCHAR" />
+        <result column="deptid" property="deptid" jdbcType="VARCHAR" />
+        <result column="companyid" property="companyid" jdbcType="VARCHAR" />
+    </resultMap>
+    <resultMap id="RoleInfo" type="com.main.pojo.platform.RoleInfo" >
+        <id column="pkid" property="pkid" jdbcType="VARCHAR" />
+        <result column="roleid" property="roleid" jdbcType="VARCHAR" />
+        <result column="roledesc" property="roledesc" jdbcType="VARCHAR" />
+    </resultMap>
+    <resultMap id="ResourceInfo" type="com.main.pojo.platform.ResourcesInfo" >
+        <id column="pkid" property="pkid" jdbcType="VARCHAR" />
+        <result column="resid" property="resid" jdbcType="VARCHAR" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="resurl" property="resurl" jdbcType="VARCHAR" />
+        <result column="parentid" property="parentid" jdbcType="VARCHAR" />
+        <result column="isleaf" property="isleaf" jdbcType="INTEGER" />
+        <result column="type" property="type" jdbcType="INTEGER" />
+        <result column="sort" property="sort" jdbcType="INTEGER" />
+        <result column="fa" property="fa" jdbcType="VARCHAR" />
+    </resultMap>
+    <resultMap id="CompanyInfo" type="com.main.pojo.platform.CompanyInfo" >
+        <result column="companyid" property="companyid" jdbcType="VARCHAR" />
+        <result column="companyname" property="companyname" jdbcType="VARCHAR" />
+        <result column="isstop" property="isstop" jdbcType="INTEGER" />
+    </resultMap>
+    <resultMap id="DeptInfo" type="com.main.pojo.platform.DeptInfo">
+        <id column="pid" property="pid" jdbcType="VARCHAR"/>
+        <result column="companyid" property="companyid" jdbcType="VARCHAR"/>
+        <result column="deptid" property="deptid" jdbcType="VARCHAR"/>
+        <result column="deptname" property="deptname" jdbcType="VARCHAR"/>
+        <result column="zjm" property="zjm" jdbcType="VARCHAR"/>
+        <result column="depttype" property="depttype" jdbcType="VARCHAR"/>
+        <result column="parentid" property="parentid" jdbcType="VARCHAR"/>
+        <result column="isleaf" property="isleaf" jdbcType="VARCHAR"/>
+        <result column="isstop" property="isstop" jdbcType="VARCHAR"/>
+        <result column="inserttime" property="inserttime" jdbcType="VARCHAR"/>
+        <result column="stoptime" property="stoptime" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+
+	<!-- 初始化单位信息-->
+	<update id="initCompany">
+		<!-- 设置所有的已存在的单位为停用 -->
+		UPDATE PM_COMPANY SET ISSTOP = 1;
+        <!-- 删除同名的 -->
+        DELETE FROM PM_COMPANY WHERE companyid = #{companyid};
+        <!-- 插入初始化录入的单位信息 -->
+        INSERT INTO PM_COMPANY(COMPANYID,COMPANYNAME,ISSTOP) VALUES (#{companyid},#{companyname},0);
+	</update>
+    <!-- 初始化管理员信息 -->
+    <update id="initAdminUser">
+        <!-- 设置所有的已存在的用户为锁定 -->
+        UPDATE PM_USER SET ENABLE = '2';
+        <!-- 删除同名的 -->
+        DELETE FROM PM_USER WHERE userid = #{userInfo.userid};
+        <!-- 插入初始化录入的用户信息 -->
+        INSERT INTO PM_USER(USERID,USERNAME,PASSWORD,ENABLE,DEPTID,COMPANYID)
+        VALUES (
+        #{userInfo.userid},#{userInfo.username},
+        #{userInfo.password},'1',#{userInfo.deptid},#{userInfo.companyid});
+    </update>
+    <!-- 通过用户账号获取用户信息 -->
+    <select id="getUserByUserid" resultMap="UserInfo">
+        select * from PM_USER
+        where userid = #{userid}
+    </select>
+    <!-- 通过用户账号获取角色信息 -->
+    <select id="getRolesByUserid" resultMap="RoleInfo">
+        select c.* from pm_user a left join PM_USER_ROLE b on a.userid=b.userpkid
+        left join PM_ROLE c on b.rolepkid = c.pkid
+        where a.userid = #{userid}
+    </select>
+    <!-- 通过用户账号获取角色信息 -->
+    <select id="getResourcesByUserid" resultMap="ResourceInfo">
+        select distinct * from (
+        select a.userid,c.* from pm_user a left join pm_user_res b on a.userid = b.userpkid
+        left join PM_RESOURCE c on b.respkid = c.pkid where c.resid is not null
+        union all
+        select a.userid,d.* from pm_user a left join pm_user_role b on a.userid = b.userpkid
+        left join PM_ROLE_RES c on b.rolepkid = c.rolepkid left join PM_RESOURCE d on c.respkid = d.pkid
+        where d.resid is not null
+        ) a where a.userid = #{userid} order by resid,sort
+    </select>
+    <!-- 获取所有单位信息 -->
+    <select id="getAllCompanyInfos" resultMap="CompanyInfo">
+        select * from PM_COMPANY where isstop = '0'
+    </select>
+    <!-- 获取所有明细部门节点信息 -->
+    <select id="getMxDeptInfos" resultMap="DeptInfo">
+        select * from PM_DEPT where isleaf = 1 and companyid = #{companyid}
+    </select>
+</mapper>

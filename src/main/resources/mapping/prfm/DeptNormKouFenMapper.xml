@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.main.dao.prfm.DeptNormKouFenDao">
+    <resultMap id="BaseResultMap" type="com.main.pojo.prfm.DeptNormKouFen">
+    	<id column="kid" property="kid" jdbcType="VARCHAR"/>
+	    <result column="companyid" property="companyid" jdbcType="VARCHAR"/>
+	    <result column="deptOrPersonId" property="deptOrPersonId" jdbcType="VARCHAR"/>
+	    <result column="zhiBiaoId" property="zhiBiaoId" jdbcType="VARCHAR"/>
+	    <result column="kouFen" property="kouFen" jdbcType="VARCHAR"/>
+	    <result column="realKouFen" property="realKouFen" jdbcType="VARCHAR"/>
+	    <result column="kouFenMark" property="kouFenMark" jdbcType="VARCHAR"/>
+	    <result column="zkkKouFen" property="zkkKouFen" jdbcType="VARCHAR"/>
+	    <result column="zkkRealKouFen" property="zkkRealKouFen" jdbcType="VARCHAR"/>
+	    <result column="zkkKouFenMark" property="zkkKouFenMark" jdbcType="VARCHAR"/>
+	    <result column="qiTaKouFen" property="qiTaKouFen" jdbcType="VARCHAR"/>
+	    <result column="kouFenRenId" property="kouFenRenId" jdbcType="VARCHAR"/>
+	    <result column="bigtype" property="bigtype" jdbcType="INTEGER"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    kid,companyid,deptOrPersonId,zhiBiaoId,kouFen,realKouFen,kouFenMark,zkkKouFen,zkkRealKouFen,zkkKouFenMark,qiTaKouFen,kouFenRenId,bigtype
+    </sql>
+
+
+    <sql id="Add_Column_List">
+     kid,companyid,deptOrPersonId,zhiBiaoId,kouFen,realKouFen,kouFenMark,zkkKouFen,,zkkRealKouFen,zkkKouFenMark,qiTaKouFen,kouFenRenId,bigtype
+    </sql>
+    <select id="selectBykid" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_DNKF
+        where kid = #{id}
+    </select>
+    <select id="getAutoGeneralID" resultType="java.util.Map">
+        select max(kid) as id
+    from PD_DNKF
+        where 1=1
+    </select>
+    <select id="getCount" resultType="java.util.Map">
+        select count(1) as count
+    from PD_DNKF
+        where 1=1
+        and companyid = #{companyid}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                  kid like '${keyword}%'
+                                  )
+            </when>
+        </choose>
+    </select>
+
+    <select id="getAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_DNKF
+        where 1=1 and companyid = #{companyid}
+    </select>
+
+    <!--如果不是带年份的表，需要自己加入年份过滤，这里不好知道年份字段的数据库名称 -->
+    <select id="validator" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_DNKF
+        where 1=1 and ${key} = #{value} and companyid = #{bridge.companyid}
+    </select>
+
+
+    <select id="get" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_DNKF
+        where 1=1 and companyid = #{companyid} 
+        <if test="deptOrPerson!=null and deptOrPerson!=''">
+         and bigtype=#{deptOrPerson}
+        </if>
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+            
+                and (
+                  kid like '${keyword}%'
+                                  )
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+        order by kid
+    </select>
+
+    <select id="getPage" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        (
+            select
+            <include refid="Base_Column_List"/>
+            ,row_number() over
+            (
+            order by
+                 kid asc
+            ) n
+           from PD_DNKF
+            where 1=1
+            and companyid = #{companyid}
+            <choose>
+                <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                    and (
+                          kid like '${keyword}%'
+                                              )
+                </when>
+            </choose>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+    </select>
+
+<!-- 
+    <select id="getPageJoinDept" resultType="com.main.pojo.result.DeptNormKouFenResult" parameterType="Object">
+        select
+	        kid,companyid,deptOrPersonId,zhiBiaoId,kouFen,realKouFen,kouFenMark,zkkKouFen,qiTaKouFen,zkkRealKouFen,zkkKouFenMark,kouFenRenId,bigtype,
+	        zhiBiaoName,zuiGaoKouFen,deptOrPersonNo,deptOrPersonName,kaoHeBiaoZhun,pingFenBiaoZhun
+        from
+        (
+            select
+	            t1.kid,t1.companyid,t1.deptOrPersonId,t1.zhiBiaoId,t1.kouFen,
+	            t1.realKouFen,t1.kouFenMark,t1.zkkKouFen,t1.qiTaKouFen,t1.zkkRealKouFen,t1.zkkKouFenMark,t1.kouFenRenId,t1.bigtype,
+	            t3.text as zhiBiaoName,t3.recsum as zuiGaoKouFen,t3.checknorm as kaoHeBiaoZhun,t3.recordnorm as pingFenBiaoZhun,
+	            t2.deptid as deptOrPersonNo,t2.deptname as deptOrPersonName
+	            ,row_number() over
+            (
+            order by
+                 kid asc
+            ) n
+           from PD_DNKF t1 
+           left join PM_DEPT t2 on t1.deptOrPersonId = t2.pid 
+           left join PM_NORM t3 on t1.zhiBiaoId = t3.uid
+            where 1=1
+            and t1.companyid = #{companyid} 
+            <if test="deptId!=null and deptId!=''">
+              and t1.deptOrPersonId = #{deptId}
+            </if>
+            <if test="normId!=null and normId!=''">
+              and t1.zhiBiaoId = #{normId}
+            </if>
+           <if test="zhiBiaoType!=null and zhiBiaoType!=''">
+              and t3.zhiBiaoType = #{zhiBiaoType}
+           </if>
+           <if test="isKouFen!=null and isKouFen!='' and isKouFen != 'null' and isKouFen==0">
+              and t1.realKouFen =100
+           </if>
+           <if test="isKouFen!=null and isKouFen!='' and isKouFen != 'null' and isKouFen==1">
+              and t1.realKouFen !=100
+           </if>
+           <if test="isMarkNull!=null and isMarkNull!='' and isMarkNull != 'null' and isMarkNull==0">
+              and t1.kouFenMark is not null
+           </if>
+           <if test="isMarkNull!=null and isMarkNull!='' and isMarkNull != 'null' and isMarkNull==1">
+              and t1.kouFenMark is null 
+           </if>
+           <if test="zhiBiaoInFo!=null and zhiBiaoInFo!='' and zhiBiaoInFo != '请输入指标信息' ">
+              and (t3.uid like '${zhiBiaoInFo}%' or  t3.text like '${zhiBiaoInFo}%')
+           </if>
+           
+            <choose>
+                <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                  
+		               and (t3.uid like '${keyword}%' or  t3.text like '${keyword}%')
+		            </if>
+		             and (t2.deptid like '${keyword}%' or  t2.deptname like '${keyword}%')
+		            </if>
+                </when>
+            </choose>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+    </select>
+    
+     -->
+
+
+    <select id="getPageJoinDept" resultType="com.main.pojo.result.DeptNormKouFenResult" parameterType="Object">
+        select
+	        kid,companyid,deptOrPersonId,zhiBiaoId,kouFen,realKouFen,kouFenMark,zkkKouFen,qiTaKouFen,zkkRealKouFen,zkkKouFenMark,kouFenRenId,bigtype,
+	        zhiBiaoName,zuiGaoKouFen,deptOrPersonNo,deptOrPersonName,kaoHeBiaoZhun,pingFenBiaoZhun
+        from
+        (
+            select
+	            t1.kid,t1.companyid,t1.deptOrPersonId,t1.zhiBiaoId,t1.kouFen,
+	            t1.realKouFen,t1.kouFenMark,t1.zkkKouFen,t1.qiTaKouFen,t1.zkkRealKouFen,t1.zkkKouFenMark,t1.kouFenRenId,t1.bigtype,
+	            t3.text as zhiBiaoName,t3.recsum as zuiGaoKouFen,t3.checknorm as kaoHeBiaoZhun,t3.recordnorm as pingFenBiaoZhun,
+	            t2.deptid as deptOrPersonNo,t2.deptname as deptOrPersonName
+	            ,row_number() over
+            (
+            order by
+                 kid asc
+            ) n from 
+            PM_DEPT t2 left join PD_DNKF t1 on t1.deptOrPersonId = t2.deptid
+			left join PM_NORM t3 on t1.zhiBiaoId = t3.uid
+            where 1=1
+            and t2.companyid = #{companyid} 
+            <if test="isInAuthcenter!=null and normId!=null and normId!=''">
+		            and t2.deptid in(
+					   select t.mtarg from  PD_AUTHCENTER t where t.morig =#{normId}
+					) 
+            </if>
+            <if test="deptId!=null and deptId!=''">
+              and t1.deptOrPersonId = #{deptId}
+            </if>
+           <if test="isKouFen!=null and isKouFen!='' and isKouFen != 'null' and isKouFen==0">
+              and t1.realKouFen =100
+           </if>
+           <if test="isKouFen!=null and isKouFen!='' and isKouFen != 'null' and isKouFen==1">
+              and t1.realKouFen !=100
+           </if>
+           <if test="isMarkNull!=null and isMarkNull!='' and isMarkNull != 'null' and isMarkNull==0">
+              and t1.kouFenMark is not null
+           </if>
+           <if test="isMarkNull!=null and isMarkNull!='' and isMarkNull != 'null' and isMarkNull==1">
+              and t1.kouFenMark is null 
+           </if>
+           <if test="zhiBiaoInFo!=null and zhiBiaoInFo!='' and zhiBiaoInFo != '请输入指标信息' ">
+              and (t3.uid like '${zhiBiaoInFo}%' or  t3.text like '${zhiBiaoInFo}%')
+           </if>
+           
+            <choose>
+                <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                  
+		            <if test="deptId!=null and deptId!=''"><!-- 有部门id的时候查指标 -->
+		               and (t3.uid like '${keyword}%' or  t3.text like '${keyword}%')
+		            </if>
+		            <if test="normId!=null and normId!=''"><!-- 有指标id的时候查部门 -->
+		             and (t2.deptid like '${keyword}%' or  t2.deptname like '${keyword}%')
+		            </if>
+                </when>
+            </choose>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+    </select>
+
+<!-- 
+  <select id="getCountJoinDept" resultType="java.util.Map">
+        select count(1) as count
+        from PD_DNKF t1 
+           left join PM_DEPT t2 on t1.deptOrPersonId = t2.pid 
+           left join PM_NORM t3 on t1.zhiBiaoId = t3.uid
+            where 1=1
+            and t1.companyid = #{companyid} 
+            <if test="deptId!=null and deptId!=''">
+              and t1.deptOrPersonId = #{deptId}
+            </if>
+            <if test="normId!=null and normId!=''">
+              and t1.zhiBiaoId = #{normId}
+            </if>
+            <if test="zhiBiaoType!=null and zhiBiaoType!=''">
+              and t3.zhiBiaoType = #{zhiBiaoType}
+            </if>
+           <if test="isKouFen!=null and isKouFen!='' and isKouFen != 'null' and isKouFen==0">
+              and t1.realKouFen =100
+           </if>
+           <if test="isKouFen!=null and isKouFen!='' and isKouFen != 'null' and isKouFen==1">
+              and t1.realKouFen !=100
+           </if>
+           <if test="isMarkNull!=null and isMarkNull!='' and isMarkNull != 'null' and isMarkNull==0">
+              and t1.kouFenMark is not null
+           </if>
+           <if test="isMarkNull!=null and isMarkNull!='' and isMarkNull != 'null' and isMarkNull==1">
+              and t1.kouFenMark is null 
+           </if>
+           <if test="zhiBiaoInFo!=null and zhiBiaoInFo!='' and zhiBiaoInFo != '请输入指标信息' ">
+              and (t3.uid like '${zhiBiaoInFo}%' or  t3.text like '${zhiBiaoInFo}%')
+           </if>
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                   <if test="deptId!=null and deptId!=''">
+		               and (t3.uid like '${keyword}%' or  t3.text like '${keyword}%')
+		            </if>
+		            <if test="normId!=null and normId!=''">
+		             and (t2.deptid like '${keyword}%' or  t2.deptname like '${keyword}%')
+		            </if>
+            </when>
+        </choose>
+    </select>
+    
+     -->
+  <select id="getCountJoinDept" resultType="java.util.Map">
+        select count(1) as count from 
+        PM_DEPT t2 left join PD_DNKF t1 on t1.deptOrPersonId = t2.deptid
+			left join PM_NORM t3 on t1.zhiBiaoId = t3.uid
+            where 1=1
+            and t2.companyid = #{companyid} 
+            <if test="isInAuthcenter!=null and normId!=null and normId!=''">
+		            and t2.deptid in(
+					   select t.mtarg from  PD_AUTHCENTER t where t.morig =#{normId}
+					) 
+            </if>
+            <if test="deptId!=null and deptId!=''">
+              and t1.deptOrPersonId = #{deptId}
+            </if>
+           <if test="isKouFen!=null and isKouFen!='' and isKouFen != 'null' and isKouFen==0">
+              and t1.realKouFen =100
+           </if>
+           <if test="isKouFen!=null and isKouFen!='' and isKouFen != 'null' and isKouFen==1">
+              and t1.realKouFen !=100
+           </if>
+           <if test="isMarkNull!=null and isMarkNull!='' and isMarkNull != 'null' and isMarkNull==0">
+              and t1.kouFenMark is not null
+           </if>
+           <if test="isMarkNull!=null and isMarkNull!='' and isMarkNull != 'null' and isMarkNull==1">
+              and t1.kouFenMark is null 
+           </if>
+           <if test="zhiBiaoInFo!=null and zhiBiaoInFo!='' and zhiBiaoInFo != '请输入指标信息' ">
+              and (t3.uid like '${zhiBiaoInFo}%' or  t3.text like '${zhiBiaoInFo}%')
+           </if>
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                   <if test="deptId!=null and deptId!=''">
+		               and (t3.uid like '${keyword}%' or  t3.text like '${keyword}%')
+		            </if>
+		            <if test="normId!=null and normId!=''">
+		             and (t2.deptid like '${keyword}%' or  t2.deptname like '${keyword}%')
+		            </if>
+            </when>
+        </choose>
+    </select>
+
+
+
+
+    <select id="getPageJoinUser" resultType="com.main.pojo.result.DeptNormKouFenResult" parameterType="Object">
+        select
+	        kid,companyid,deptOrPersonId,zhiBiaoId,kouFen,realKouFen,kouFenMark,zkkKouFen,zkkRealKouFen,zkkKouFenMark,qiTaKouFen,kouFenRenId,bigtype,
+	        zhiBiaoName,zuiGaoKouFen,deptOrPersonNo,deptOrPersonName
+        from
+        (
+            select
+	            t1.kid,t1.companyid,t1.deptOrPersonId,t1.zhiBiaoId,t1.kouFen,
+	            t1.realKouFen,t1.kouFenMark,t1.zkkKouFen,t1.zkkRealKouFen,t1.zkkKouFenMark,t1.qiTaKouFen,t1.kouFenRenId,t1.bigtype,
+	            t3.text as zhiBiaoName,t3.recsum as zuiGaoKouFen,t2.userid as deptOrPersonNo ,
+	            t2.username as deptOrPersonName
+	            ,row_number() over
+            (
+            order by
+                 kid asc
+            ) n
+           from PD_DNKF t1 
+           left join PM_USER t2 on t1.deptOrPersonId = t2.userid 
+           left join PM_NORM t3 on t1.zhiBiaoId = t3.uid
+            where 1=1
+            and t1.companyid = #{companyid} 
+            <if test="normId!=null and normId!=''">
+              and t1.zhiBiaoId = #{normId}
+            </if>
+            <if test="zhiBiaoType!=null and zhiBiaoType!=''">
+              and t3.zhiBiaoType = #{zhiBiaoType}
+            </if>
+            <choose>
+                <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                    and (t2.userid like '${keyword}%' or t2.username like '${keyword}%')
+                </when>
+            </choose>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+    </select>
+
+
+  <select id="getCountJoinUser" resultType="java.util.Map">
+        select count(1) as count
+        from PD_DNKF t1 
+           left join PM_USER t2 on t1.deptOrPersonId = t2.userid 
+           left join PM_NORM t3 on t1.zhiBiaoId = t3.uid
+            where 1=1
+            and t1.companyid = #{companyid} 
+            <if test="normId!=null and normId!=''">
+              and t1.zhiBiaoId = #{normId}
+            </if>
+            <if test="zhiBiaoType!=null and zhiBiaoType!=''">
+              and t3.zhiBiaoType = #{zhiBiaoType}
+            </if>
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                  kid like '${keyword}%'
+                                  )
+            </when>
+        </choose>
+    </select>
+
+    <insert id="insert" parameterType="map">
+        insert into
+            PD_DNKF
+        (
+        <include refid="Add_Column_List"/>
+        )
+        values(#{kid},#{companyid},#{deptOrPersonId},#{zhiBiaoId},#{kouFen},#{realKouFen},#{kouFenMark},#{zkkKouFen},#{zkkRealKouFen},#{zkkKouFenMark},#{qiTaKouFen},#{kouFenRenId},#{bigtype})
+    </insert>
+
+    <update id="update" parameterType="map">
+        update
+            PD_DNKF
+        set
+                kid = #{kid},
+                companyid = #{companyid},
+                deptOrPersonId = #{deptOrPersonId},
+                zhiBiaoId = #{zhiBiaoId},
+                zhiBiaoType = #{zhiBiaoType},
+                kouFen = #{kouFen},
+                realKouFen = #{realKouFen},
+                kouFenMark = #{kouFenMark},
+                zkkKouFen = #{zkkKouFen},
+                zkkRealKouFen=#{zkkRealKouFen},
+                zkkKouFenMark=#{zkkKouFenMark},
+                qiTaKouFen = #{qiTaKouFen},
+                kouFenRenId = #{kouFenRenId}        where kid = #{whereId}
+    </update>
+    <delete id="deleteByPrimaryKey" parameterType="map">
+        delete from
+            PD_DNKF
+        where kid = #{id}
+    </delete>
+    <delete id="deleteAll">
+          delete from PD_DNKF where 1=1
+
+    </delete>
+</mapper>

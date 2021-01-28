@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.main.dao.platform.UserInfoDao">
+    <resultMap id="BaseResultMap" type="com.main.pojo.platform.UserInfo">
+        <id column="userid" property="userid" jdbcType="VARCHAR"/>
+        <result column="phone" property="phone" jdbcType="VARCHAR"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="zjm" property="zjm" jdbcType="VARCHAR"/>
+        <result column="password" property="password" jdbcType="VARCHAR"/>
+        <result column="enable" property="enable" jdbcType="VARCHAR"/>
+        <result column="birthday" property="birthday" jdbcType="VARCHAR"/>
+        <result column="idcard" property="idcard" jdbcType="VARCHAR"/>
+        <result column="sex" property="sex" jdbcType="VARCHAR"/>
+        <result column="post" property="post" jdbcType="VARCHAR"/>
+        <result column="userstyle" property="userstyle" jdbcType="VARCHAR"/>
+        <result column="userstatus" property="userstatus" jdbcType="VARCHAR"/>
+        <result column="entrytime" property="entrytime" jdbcType="VARCHAR"/>
+        <result column="deptid" property="deptid" jdbcType="VARCHAR"/>
+        <result column="deptname" property="deptname" jdbcType="VARCHAR"/>
+        <result column="companyid" property="companyid" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    userid,phone,email,username,zjm,password,enable,birthday,idcard,sex,post,userstyle,userstatus,entrytime,deptid,deptname,companyid
+    </sql>
+
+
+    <sql id="Add_Column_List">
+    userid,phone,email,username,zjm,password,enable,birthday,idcard,sex,post,userstyle,userstatus,entrytime,deptid,companyid
+    </sql>
+    <select id="selectByuserid" resultMap="BaseResultMap">
+        select a.*,b.deptid+' '+b.deptname as deptname
+        from PM_USER a left join PM_DEPT b
+            on a.deptid = b.deptid and a.companyid = b.companyid and b.isleaf = 1
+        where a.userid = #{userpkid}
+    </select>
+    <select id="getAutoGeneralID" resultType="java.util.Map">
+        select max(userid) as id
+        from PM_USER
+        where 1=1
+    </select>
+    <select id="getCount" resultType="java.util.Map">
+        select count(1) as count
+        from PM_USER  a 
+        left join PM_DEPT_MB b
+        on a.deptid = b.deptid and a.companyid = b.companyid and b.isleaf = 1 and b.yearmonth = #{yearmonth}
+        where 1=1
+        and a.companyid = #{companyid}
+        <if test="authcode!=null and authcode != '' and authcode != 'null'">
+            and b.deptid in (select mtarg from pd_authcenter where funcode = #{authcode} and morig=#{userid} and companyid = #{companyid})
+        </if>
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                userid like '${keyword}%'
+                or
+                phone like '${keyword}%'
+                or
+                email like '${keyword}%'
+                or
+                username like '${keyword}%'
+                or
+                zjm like '${keyword}%'
+                or
+                birthday like '${keyword}%'
+                or
+                idcard like '${keyword}%'
+                )
+            </when>
+        </choose>
+    </select>
+
+    <select id="getAll" resultMap="BaseResultMap" parameterType="map">
+        select
+        *
+        from PM_USER
+        where 1=1 and companyid = #{companyid}
+    </select>
+
+    <!--如果不是带年份的表，需要自己加入年份过滤，这里不好知道年份字段的数据库名称 -->
+    <select id="validator" resultType="java.util.Map">
+        select *
+        from PM_USER
+        where 1=1 and ${key} = #{value} and companyid = #{bridge.companyid}
+    </select>
+
+
+    <select id="get" resultMap="BaseResultMap" parameterType="map">
+        select *
+        from PM_USER
+        where 1=1 and companyid = #{companyid}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+
+                and (
+                userid like '${keyword}%'
+                or
+                phone like '${keyword}%'
+                or
+                email like '${keyword}%'
+                or
+                username like '${keyword}%'
+                or
+                zjm like '${keyword}%'
+                or
+                birthday like '${keyword}%'
+                or
+                idcard like '${keyword}%'
+                )
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+        order by userid
+    </select>
+
+    <select id="getPage" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        (
+            select a.*,b.deptid+' '+b.deptname as deptname,row_number() over
+            (
+            order by
+            userid asc
+            ) n
+            from PM_USER a
+            left join PM_DEPT_MB b
+            on a.deptid = b.deptid and a.companyid = b.companyid and b.isleaf = 1 and b.yearmonth = #{yearmonth}
+            where 1=1 and a.companyid = #{companyid}
+            <if test="authcode!=null and authcode != '' and authcode != 'null'">
+                and b.deptid in (select mtarg from pd_authcenter where funcode = #{authcode} and morig=#{userid} and companyid = #{companyid})
+            </if>
+            <choose>
+                <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                    and (
+                    userid like '${keyword}%'
+                    or
+                    phone like '${keyword}%'
+                    or
+                    email like '${keyword}%'
+                    or
+                    username like '${keyword}%'
+                    or
+                    a.zjm like '${keyword}%'
+                    or
+                    birthday like '${keyword}%'
+                    or
+                    idcard like '${keyword}%'
+                    )
+                </when>
+            </choose>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+    </select>
+
+    <insert id="insert" parameterType="map">
+        insert into
+        PM_USER
+        (<include refid="Add_Column_List"/>)
+        values(#{userid},#{phone},#{email},#{username},#{zjm},#{password},#{enable},#{birthday},#{idcard},#{sex},#{post},#{userstyle},#{userstatus},#{entrytime},#{deptid},#{companyid});
+        insert into
+        PM_USER_DEPT_MB${year}
+        (userpkid,deptpkid,yearmonth)
+        values(#{userid},#{deptid},#{yearmonth});
+    </insert>
+
+    <update id="update" parameterType="map">
+  		update
+	    PM_USER
+  		set
+				phone = #{phone},
+				email = #{email},
+				username = #{username},
+				enable = #{enable},
+				birthday = #{birthday},
+				idcard = #{idcard},
+				sex = #{sex},
+				post = #{post},
+				deptid=#{deptid},
+				userstyle = #{userstyle},
+				userstatus = #{userstatus},
+				entrytime = #{entrytime} where userid = #{whereId};
+		update PM_USER_DEPT_MB${year}
+		set deptpkid = #{deptid} where userpkid = #{whereId} and yearmonth = #{yearmonth}
+    </update>
+    <delete id="deleteByPrimaryKey" parameterType="map">
+	    delete from
+	    PM_USER
+	    where userid = #{id};
+	    delete from PM_USER_DEPT_MB${year} where userpkid=#{id} and yearmonth = #{yearmonth}
+    </delete>
+    <delete id="deleteAll">
+          delete from PM_USER where 1=1;
+          delete from PM_USER_DEPT_MB${year} where yearmonth = #{yearmonth}
+
+    </delete>
+    <select id="getUserMgrInfoPage" resultMap="BaseResultMap" parameterType="map">
+        select
+        userid,username,zjm,password,enable,deptid,companyid,resfrom
+        from
+        (
+            select userid,username,zjm,password,enable,deptid,companyid,b.resfrom,row_number() over
+            (
+            order by
+            userid asc
+            ) n
+            from PM_USER a left join (
+            <choose>
+                <when test="resourcePkid != null and resourcePkid != '' and resourcePkid != 'null'">
+                    select userpkid,'1' as resfrom from PM_USER_ROLE where rolepkid in (
+                    select rolepkid from PM_ROLE_RES where respkid = #{resourcePkid}
+                    ) group by userpkid
+                    union all
+                    select userpkid,'2' as resfrom from PM_USER_RES where respkid = #{resourcePkid}
+                    group by userpkid
+                </when>
+                <otherwise>
+                    select userpkid,'1' as resfrom from PM_USER_ROLE where rolepkid = #{rolePkid}
+                </otherwise>
+            </choose>
+
+            ) b on a.userid = b.userpkid
+            where 1=1
+            and companyid = #{companyid} and b.userpkid is not null
+            <choose>
+                <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                    and (
+                    userid like '${keyword}%'
+                    or
+                    username like '%${keyword}%'
+                    or
+                    zjm like '%${keyword}%'
+                    )
+                </when>
+            </choose>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+    </select>
+    <select id="getCountOfUserMgrInfo" resultType="java.util.Map">
+        select count(1) as count
+        from PM_USER a left join (
+        <choose>
+            <when test="resourcePkid != null and resourcePkid != '' and resourcePkid != 'null'">
+                select userpkid,'1' as resfrom from PM_USER_ROLE where rolepkid in (
+                select rolepkid from PM_ROLE_RES where respkid = #{resourcePkid}
+                ) group by userpkid
+                union all
+                select userpkid,'2' as resfrom from PM_USER_RES where respkid = #{resourcePkid}
+                group by userpkid
+            </when>
+            <otherwise>
+                select userpkid,'1' as resfrom from PM_USER_ROLE where rolepkid = #{rolePkid}
+            </otherwise>
+        </choose>
+
+        ) b on a.userid = b.userpkid
+        where 1=1 and b.userpkid is not null
+        and companyid = #{companyid}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                userid like '${keyword}%'
+                or
+                username like '%${keyword}%'
+                or
+                zjm like '%${keyword}%'
+                )
+            </when>
+        </choose>
+    </select>
+
+
+    <!-- 移除用户与角色对应关系 -->
+    <delete id="removeAuthFromUserRoleByRes">
+        delete from pm_user_role where
+        rolepkid in( select distinct rolepkid from PM_ROLE_RES where respkid like '${resourcepkid}%' )
+        and userpkid = #{userpkid}
+    </delete>
+    <!-- 移除用户与角色对应关系 -->
+    <delete id="removeAuthFromUserRoleByRole">
+        delete from pm_user_role where 1=1
+        and rolepkid = #{rolepkid}
+        and userpkid = #{userpkid}
+    </delete>
+    <delete id="removeAuthFromUserRes">
+        delete from pm_user_res where respkid like '${resourcepkid}%' and userpkid = #{userpkid}
+    </delete>
+    <!-- 新增用户与资源对应 -->
+    <insert id="addAuthFromUserRes">
+        insert into pm_user_res(userpkid,respkid)
+        select #{userpkid},pkid from PM_RESOURCE where pkid like '${resourcepkid}%'
+    </insert>
+
+    <select id="getCountOfUserResAuth" resultType="java.lang.Integer">
+        select count(1) from pm_user_res
+        where respkid = #{resourcepkid} and userpkid = #{userpkid}
+    </select>
+
+    <insert id="insertUsers" parameterType="java.util.List">
+        insert into PM_USER (<include refid="Add_Column_List"/>)
+        values
+        <foreach collection="users" item="user" index="index" separator=",">
+            (#{user.userid},#{user.phone},#{user.email},#{user.username},#{user.zjm},
+            #{user.password},#{user.enable},#{user.birthday},#{user.idcard},#{user.sex},
+            #{user.post},#{user.userstyle},#{user.userstatus},#{user.entrytime},
+            #{user.deptid},#{user.companyid})
+        </foreach>
+    </insert>
+
+    <update id="updatePassword" >
+        update pm_user set password = #{userInfo.password} where userid = #{userInfo.userid}
+    </update>
+    <update id="editProfile" >
+        update pm_user
+        set
+				phone = #{userInfo.phone},
+				email = #{userInfo.email},
+				birthday = #{userInfo.birthday},
+				idcard = #{userInfo.idcard}
+        where userid = #{userInfo.userid}
+    </update>
+    <update id="editSocketInfo" >
+        update pm_user
+        set
+				connected = ${userInfo.connected},
+				mostsignbits = ${userInfo.mostsignbits},
+				leastsignbits = ${userInfo.leastsignbits},
+				lastconnecteddate = #{userInfo.lastconnecteddate}
+        where userid = #{userInfo.userid}
+    </update>
+
+    <update id="backupMonthData">
+        delete from PM_USER_DEPT_MB${year} Where yearmonth = #{year_month};
+        insert into PM_USER_DEPT_MB${year}(userpkid,deptpkid,yearmonth)
+        select userid,deptid,#{year_month} as yearmonth from PM_USER
+    </update>
+</mapper>

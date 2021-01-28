@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.main.dao.prfm.NormDao">
+    <resultMap id="BaseResultMap" type="com.main.pojo.prfm.Norm">
+    	<id column="uid" property="uid" jdbcType="VARCHAR"/>
+	    <result column="companyid" property="companyid" jdbcType="VARCHAR"/>
+	    <result column="text" property="text" jdbcType="VARCHAR"/>
+	    <result column="checknorm" property="checknorm" jdbcType="VARCHAR"/>
+	    <result column="recordnorm" property="recordnorm" jdbcType="VARCHAR"/>
+	    <result column="kouFenType" property="kouFenType" jdbcType="INTEGER"/>
+	    <result column="zhiBiaoType" property="zhiBiaoType" jdbcType="INTEGER"/>
+	    <result column="jiXiaoZhanBi" property="jiXiaoZhanBi" jdbcType="DECIMAL"/>
+	    <result column="formula" property="formula" jdbcType="VARCHAR"/>
+	    <result column="bigtype" property="bigtype" jdbcType="INTEGER"/>
+	    <result column="orderid" property="orderid" jdbcType="INTEGER"/>
+	    <result column="iscomp" property="iscomp" jdbcType="INTEGER"/>
+	    <result column="isstop" property="isstop" jdbcType="INTEGER"/>
+	    <result column="score" property="score" jdbcType="DECIMAL"/>
+	    <result column="rec1" property="rec1" jdbcType="DECIMAL"/>
+	    <result column="recsum" property="recsum" jdbcType="DECIMAL"/>
+	    <result column="recforce" property="recforce" jdbcType="INTEGER"/>
+	    <result column="parentid" property="parentid" jdbcType="VARCHAR"/>
+	    <result column="isleaf" property="isleaf" jdbcType="VARCHAR"/>
+	    <result column="year" property="year" jdbcType="INTEGER"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    uid,companyid,text,checknorm,recordnorm,kouFenType,zhiBiaoType,jiXiaoZhanBi,formula,bigtype,orderid,iscomp,isstop,score,rec1,recsum,recforce,parentid,isleaf,year
+    </sql>
+
+
+    <sql id="Add_Column_List">
+    uid,companyid,text,checknorm,recordnorm,kouFenType,zhiBiaoType,jiXiaoZhanBi,formula,bigtype,orderid,iscomp,isstop,score,rec1,recsum,recforce,parentid,isleaf,year
+    </sql>
+    <select id="selectByuid" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+    from PM_NORM
+        where uid = #{id}
+    </select>
+    <select id="getAutoGeneralID" resultType="java.util.Map">
+        select max(uid) as id
+    from PM_NORM
+        where 1=1
+        <choose>
+            <when test="parentId != null and parentId != 'root' and parentId != 'null' and parentId != '' ">
+                and parentid = #{parentId}
+            </when>
+            <otherwise>
+                and (parentid is null or parentid = '' or parentid = '0')
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getCount" resultType="java.util.Map">
+        select count(1) as count
+    from PM_NORM
+        where 1=1
+        and companyid = #{companyid}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                  text like '${keyword}%'
+                                  )
+            </when>
+        </choose>
+    </select>
+
+    <select id="getAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+    from PM_NORM
+        where 1=1 and companyid = #{companyid}
+    </select>
+
+    <!--如果不是带年份的表，需要自己加入年份过滤，这里不好知道年份字段的数据库名称 -->
+    <select id="validator" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+    from PM_NORM
+        where 1=1 and ${key} = #{value} and companyid = #{bridge.companyid}
+    </select>
+
+
+    <select id="get" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+    from PM_NORM
+        where 1=1 and companyid = #{companyid} and bigtype=#{deptOrPerson} 
+        <if test="zhiBiaoType !=null and zhiBiaoType !='' ">
+           and zhiBiaoType=#{zhiBiaoType}
+        </if>
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+            and isleaf = 1
+                and (
+                  text like '${keyword}%'
+                                  )
+            </when>
+            <otherwise>
+                <choose>
+                    <when test="node != null and node != 'root' and node != 'null' and node != '' ">
+                        and parentid = #{node}
+                    </when>
+                    <otherwise>
+                        and (parentid is null or parentid = '' or parentid = '0')
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+        order by uid
+    </select>
+    
+    
+    
+     <select id="getByCondition" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+    from PM_NORM
+        where 1=1 and companyid = #{companyid}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                  text like '${keyword}%'
+                                  )
+            </when>
+        </choose>
+        order by uid
+    </select>
+    
+    
+
+    <select id="getPage" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        (
+            select
+            <include refid="Base_Column_List"/>
+            ,row_number() over
+            (
+            order by
+                 uid asc
+            ) n
+           from PM_NORM
+            where 1=1
+            and companyid = #{companyid}
+            <choose>
+                <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                    and (
+                          text like '${keyword}%'
+                                              )
+                </when>
+            </choose>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+    </select>
+
+    <insert id="insert" parameterType="map">
+        insert into
+            PM_NORM
+        (
+        <include refid="Add_Column_List"/>
+        )
+        values(#{uid},#{companyid},#{text},#{checknorm},#{recordnorm},#{kouFenType},#{zhiBiaoType},#{jiXiaoZhanBi},#{formula},#{bigtype},#{orderid},#{iscomp},#{isstop},#{score},#{rec1},#{recsum},#{recforce},#{parentid},#{isleaf},#{year})
+    </insert>
+
+
+    <!-- 批量插入记录 -->
+    <insert id="insertBatch" parameterType="java.util.List" useGeneratedKeys="true">
+        insert into PM_NORM
+        (
+        <trim  suffixOverrides=",">
+        uid,companyid,text,checknorm,recordnorm,kouFenType,zhiBiaoType,jiXiaoZhanBi,formula,bigtype,orderid,iscomp,isstop,score,rec1,recsum,recforce,parentid,isleaf,year
+        </trim>
+        )
+
+        values
+
+        <foreach collection="list" item="item" index="index" separator="," >
+            (
+            <trim  suffixOverrides="," >
+                #{item.uid},#{item.companyid},#{item.text},#{item.checknorm},#{item.recordnorm},#{item.kouFenType},#{item.zhiBiaoType},#{item.jiXiaoZhanBi},#{item.formula},#{item.bigtype},#{item.orderid},#{item.iscomp},#{item.isstop},#{item.score},#{item.rec1},#{item.recsum},#{item.recforce},#{item.parentid},#{item.isleaf},#{item.year},
+            </trim>
+            )
+        </foreach>
+    </insert>
+
+
+
+    <update id="update" parameterType="map">
+        update
+            PM_NORM
+        set
+                uid = #{uid},
+                text = #{text},
+                checknorm = #{checknorm},
+                recordnorm = #{recordnorm},
+                kouFenType = #{kouFenType},
+                zhiBiaoType = #{zhiBiaoType},
+                jiXiaoZhanBi = #{jiXiaoZhanBi},
+                formula = #{formula},
+                iscomp = #{iscomp},
+                isstop = #{isstop},
+                score = #{score},
+                rec1 = #{rec1},
+                recsum = #{recsum},
+                recforce = #{recforce}        where uid = #{whereId}
+    </update>
+    <update id="changeLeaf" parameterType="map">
+        update
+            PM_NORM
+        set isleaf = #{value}
+        where uid = #{id}
+    </update>
+    <delete id="deleteByPrimaryKey" parameterType="map">
+        delete from
+            PM_NORM
+        where uid = #{id}
+            or parentid = #{id}
+    </delete>
+    <delete id="deleteAll">
+          delete from PM_NORM where 1=1
+
+    </delete>
+</mapper>

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.main.dao.prfm.ItemTypeDao">
+    <resultMap id="BaseResultMap" type="com.main.pojo.prfm.ItemType">
+    	<id column="pid" property="pid" jdbcType="VARCHAR"/>
+	    <result column="companyid" property="companyid" jdbcType="VARCHAR"/>
+	    <result column="code" property="code" jdbcType="VARCHAR"/>
+	    <result column="text" property="text" jdbcType="VARCHAR"/>
+	    <result column="itemtype" property="itemtype" jdbcType="VARCHAR"/>
+	    <result column="parentid" property="parentid" jdbcType="VARCHAR"/>
+	    <result column="isleaf" property="isleaf" jdbcType="VARCHAR"/>
+	    <result column="isstop" property="isstop" jdbcType="INTEGER"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    pid,companyid,code,text,itemtype,parentid,isleaf,isstop
+    </sql>
+
+
+    <sql id="Add_Column_List">
+    pid,companyid,code,text,itemtype,parentid,isleaf,isstop
+    </sql>
+    <select id="selectBypid" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_ITEMTYPE
+        where pid = #{id}
+    </select>
+    <select id="getAutoGeneralID" resultType="java.util.Map">
+        select max(pid) as id
+    from PD_ITEMTYPE
+        where 1=1
+        <choose>
+            <when test="parentId != null and parentId != 'root' and parentId != 'null' and parentId != '' ">
+                and parentid = #{parentId}
+            </when>
+            <otherwise>
+                and (parentid is null or parentid = '' or parentid = '0')
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getCount" resultType="java.util.Map">
+        select count(1) as count
+    from PD_ITEMTYPE
+        where 1=1
+        and companyid = #{companyid}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                  code like '${keyword}%'
+                   or
+                  text like '${keyword}%'
+                                  )
+            </when>
+        </choose>
+    </select>
+
+    <select id="getAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_ITEMTYPE
+        where 1=1 and companyid = #{companyid}
+    </select>
+
+    <!--如果不是带年份的表，需要自己加入年份过滤，这里不好知道年份字段的数据库名称 -->
+    <select id="validator" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_ITEMTYPE
+        where 1=1 and ${key} = #{value} and companyid = #{bridge.companyid}
+    </select>
+
+
+    <select id="get" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_ITEMTYPE
+        where 1=1 and companyid = #{companyid}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+            and isleaf = 1
+                and (
+                  code like '${keyword}%'
+                   or
+                  text like '${keyword}%'
+                                  )
+            </when>
+            <otherwise>
+                <choose>
+                    <when test="node != null and node != 'root' and node != 'null' and node != '' ">
+                        and parentid = #{node}
+                    </when>
+                    <otherwise>
+                        and (parentid is null or parentid = '' or parentid = '0')
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+        order by pid
+    </select>
+
+    <select id="getPage" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        (
+            select
+            <include refid="Base_Column_List"/>
+            ,row_number() over
+            (
+            order by
+                 pid asc
+            ) n
+           from PD_ITEMTYPE
+            where 1=1
+            and companyid = #{companyid}
+            <choose>
+                <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                    and (
+                          code like '${keyword}%'
+                           or
+                          text like '${keyword}%'
+                                              )
+                </when>
+            </choose>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+    </select>
+
+    <insert id="insert" parameterType="map">
+        insert into
+            PD_ITEMTYPE
+        (
+        <include refid="Add_Column_List"/>
+        )
+        values(newid(),#{companyid},#{code},#{text},#{itemtype},#{parentid},#{isleaf},#{isstop})
+    </insert>
+
+    <update id="update" parameterType="map">
+        update
+            PD_ITEMTYPE
+        set
+               <!--   pid = #{pid}, 修改 不用改 id-->
+                companyid = #{companyid},
+                code = #{code},
+                text = #{text},
+                itemtype = #{itemtype},
+                isstop = #{isstop}        where pid = #{whereId}
+    </update>
+    <update id="changeLeaf" parameterType="map">
+        update
+            PD_ITEMTYPE
+        set isleaf = #{value}
+        where pid = #{id}
+    </update>
+    <delete id="deleteByPrimaryKey" parameterType="map">
+        delete from
+            PD_ITEMTYPE
+        where pid = #{id}
+            or parentid = #{id}
+    </delete>
+    <delete id="deleteAll">
+          delete from PD_ITEMTYPE where 1=1
+
+    </delete>
+</mapper>

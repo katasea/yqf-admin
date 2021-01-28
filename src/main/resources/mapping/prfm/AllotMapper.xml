@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.main.dao.prfm.AllotDao">
+
+    <delete id="deleteAllotResult">
+
+        <!--删除医生工分结果-->
+        delete From PD_DOC${year}
+        where
+              companyid = #{companyId} and
+              month  = #{month}
+        <!--删除护士工分结果-->
+        delete From PD_NURSE${year}
+        where
+              companyid = #{companyId} and
+              month  = #{month}
+        <!--删除医技工分结果-->
+        delete From PD_OPERATOR${year}
+        where
+              companyid = #{companyId} and
+              month  = #{month}
+        <!--删除诊断工分结果-->
+        delete From PD_DIAGNOSIS${year}
+        where
+              companyid = #{companyId} and
+              month  = #{month}
+        <!--删除麻醉工分结果-->
+        delete From PD_POISION${year}
+        where
+            companyid = #{companyId} and
+            month  = #{month}
+    </delete>
+
+    <select id="getOriMzAndZyData" resultType="Map">
+
+        <!--获取门诊的当月数据-->
+        select
+              rtrim(itembh) itembh,isnull(itemtypebh,'') itemtypebh,SUM(amount) amount,sum(count) count,
+              ,sbmbh,zbmbh,isnull(sgrbh,'') sgrbh,isnull(zgrbh,'') zgrbh,isnull(reverse,'') reverse,isnull(reverse1,'') reverse1
+              ,isnull(reverse2,'') reverse2,isnull(reverse3,'') reverse3,isnull(reverse4,'') reverse4,'m' moz
+        FROM
+            PD_MZ${year}
+        where
+            companyId = #{companyId} and
+            month = #{month}
+        group by
+           itembh,itemtypebh,sbmbh,zbmbh,sgrbh,zgrbh,reverse,reverse1,reverse2,reverse3,reverse4,moz
+
+        union
+        <!--获取住院的当月数据-->
+        select
+            ${year} year,${month} month,${companyId} companyId,rtrim(itembh) itembh,isnull(itemtypebh,'') itemtypebh
+            ,SUM(amount) amount,sum(count) count,
+            ,sbmbh,zbmbh,isnull(sgrbh,'') sgrbh,isnull(zgrbh,'') zgrbh,isnull(reverse,'') reverse,isnull(reverse1,'') reverse1
+            ,isnull(reverse2,'') reverse2,isnull(reverse3,'') reverse3,isnull(reverse4,'') reverse4,'z' moz
+        FROM
+              PD_ZY${year}
+        where
+              companyId = #{companyId} and
+              month = #{month}
+        group by
+          itembh,itemtypebh,sbmbh,zbmbh,sgrbh,zgrbh,reverse,reverse1,reverse2,reverse3,reverse4,moz
+
+    </select>
+
+    <insert id="insertIntoAllotResult" >
+        <!-- 插入申请医生工分 -->
+        insert into PD_DOC${year}
+          (pkid,companyid,month ,amount,bmbh ,doc ,oridoc,adjdoc  ,soz,moz ,price,count ,sbmbh,zbmbh
+          ,hbmbh,sgrbh,zgrbh,itemtypebh,itembh,itemname,note,reverse1,reverse2,reverse3)
+        VALUES (newid(),#{companyid},#{month},#{amount},#{sbmbh},#{sRBRVS},#{sOriRBRVS},#{sAdjRBRVS},
+                's',#{moz},#{price},#{sCount},#{sbmbh},#{zbmbh},#{nurse},#{sgrbh},#{zgrbh},#{itemtypebh},
+                #{itembh},#{itemname},#{reverse},#{reverse1},#{reverse2},#{reverse3}
+                )
+        <!-- 插入执行医生工分-->
+        insert into PD_DOC${year}
+            (pkid,companyid,month ,amount,bmbh ,doc ,oridoc,adjdoc  ,soz,moz ,price,count ,sbmbh,zbmbh
+            ,hbmbh,sgrbh,zgrbh,itemtypebh,itembh,itemname,note,reverse1,reverse2,reverse3)
+        VALUES (newid(),#{companyid},#{month},#{amount},#{zbmbh},#{zRBRVS},#{zOriRBRVS},#{zAdjRBRVS},
+            'z',#{moz},#{price},#{zCount},#{sbmbh},#{zbmbh},#{nurse},#{sgrbh},#{zgrbh},#{itemtypebh},
+            #{itembh},#{itemname},#{reverse},#{reverse1},#{reverse2},#{reverse3}
+        )
+
+        <if test='nurse!=null'>
+            <!-- 如果护士编号不为空,插入执行护士工分-->
+            insert into PD_NURSE${year}
+            (pkid,companyid,month ,amount,bmbh ,nurse ,orinurse,adjnurse  ,soz,moz ,price,count ,sbmbh,zbmbh
+            ,hbmbh,sgrbh,zgrbh,itemtypebh,itembh,itemname,note,reverse1,reverse2,reverse3)
+            VALUES (newid(),#{companyid},#{month},#{amount},#{nurse},#{nRBRVS},#{nOriRBRVS},#{nAdjRBRVS},
+            'z',#{moz},#{price},#{nCount},#{sbmbh},#{zbmbh},#{nurse},#{sgrbh},#{zgrbh},#{itemtypebh},
+            #{itembh},#{itemname},#{reverse},#{reverse1},#{reverse2},#{reverse3}
+            )
+        </if>
+
+    </insert>
+
+    <select id="getRbrvsXsMap" resultType="com.main.pojo.prfm.RbrvsCoefficient">
+        select xmbh,xmtext,price,
+               oridoc,adjdoc,doc ,  orinurse,adjnurse,nurse ,
+               orioperator,adjoperator,operator,  oripoison.adjpoison,poision
+        FROM   PD_RBRVS_XS
+        where
+              companyid = #{companyid}
+    </select>
+</mapper>

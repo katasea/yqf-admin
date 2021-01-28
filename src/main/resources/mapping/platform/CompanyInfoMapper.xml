@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.main.dao.platform.CompanyInfoDao">
+    <resultMap id="BaseResultMap" type="com.main.pojo.platform.CompanyInfo">
+        <id column="companyid" property="companyid" jdbcType="VARCHAR"/>
+        <result column="companyname" property="companyname" jdbcType="VARCHAR"/>
+        <result column="isstop" property="isstop" jdbcType="INTEGER"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    companyid,companyname,isstop
+  </sql>
+
+
+    <sql id="Add_Column_List">
+    companyid,companyname,isstop
+  </sql>
+    <select id="selectBycompanyid" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_COMPANY
+        where companyid = #{id}
+    </select>
+    <select id="getAutoGeneralID" resultType="java.util.Map">
+    select max(companyid) as id
+    from PM_COMPANY
+    where 1=1
+</select>
+    <select id="getCount" resultType="java.util.Map">
+        select count(1) as count
+        from PM_COMPANY
+        where 1=1
+        and companyid = #{companyid}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                companyid like '${keyword}%'
+                or
+                companyname like '${keyword}%'
+                )
+            </when>
+        </choose>
+    </select>
+
+    <select id="getAll" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_COMPANY
+        where 1=1 and companyid = ${companyid}
+    </select>
+
+    <!--如果不是带年份的表，需要自己加入年份过滤，这里不好知道年份字段的数据库名称 -->
+    <select id="validator" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_COMPANY
+        where 1=1 and ${key} = #{value} and companyid = #{bridge.companyid}
+    </select>
+
+
+    <select id="get" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_COMPANY
+        where 1=1 and companyid = #{companyid}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+
+                and (
+                companyid like '${keyword}%'
+                or
+                companyname like '${keyword}%'
+                )
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+        order by companyid
+    </select>
+
+    <select id="getPage" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        (
+            select<include refid="Base_Column_List"/>,row_number() over
+            (
+            order by
+            companyid asc
+            ) n
+            from PM_COMPANY where 1=1 and companyid = #{companyid}
+            <choose>
+                <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                    and (
+                    companyid like '${keyword}%'
+                    or
+                    companyname like '${keyword}%'
+                    )
+                </when>
+            </choose>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+
+    </select>
+
+    <insert id="insert" parameterType="map">
+        insert into
+        PM_COMPANY
+        (<include refid="Add_Column_List"/>)
+        values(#{companyid},#{companyname},#{isstop})
+    </insert>
+
+    <update id="update" parameterType="map">
+  		update
+	    PM_COMPANY
+  		set
+				companyid = #{companyid},
+				companyname = #{companyname},
+				isstop = #{isstop}  		where companyid = #{whereId}
+  </update>
+    <delete id="deleteByPrimaryKey" parameterType="map">
+	    delete from
+	    PM_COMPANY
+	    where companyid = #{id}
+  </delete>
+    <delete id="deleteAll">
+          delete from PM_COMPANY where 1=1
+
+  </delete>
+</mapper>

@@ -1,0 +1,30 @@
+Ext.define('MyApp.model.Norm', {
+    extend: 'Ext.data.Model',
+    fields: [
+        { name: 'uid', type: 'string'},
+        { name: 'companyid', type: 'string'},
+        { name: 'text', type: 'string'},
+        { name: 'checknorm', type: 'string'},
+        { name: 'recordnorm', type: 'string'},
+        { name: 'kouFenType', type: 'int'},
+        { name: 'zhiBiaoType', type: 'int'},
+        { name: 'jiXiaoZhanBi', type: 'float'},
+        { name: 'formula', type: 'string'},
+        { name: 'bigtype', type: 'int'},
+        { name: 'orderid', type: 'int'},
+        { name: 'iscomp', type: 'int'},
+        { name: 'isstop', type: 'int'},
+        { name: 'score', type: 'float'},
+        { name: 'rec1', type: 'float'},
+        { name: 'recsum', type: 'float'},
+        { name: 'recforce', type: 'int'},
+        { name: 'parentid', type: 'string'},
+        { name: 'isleaf', type: 'string'},
+        { name: 'year', type: 'int'},
+        { name: 'id', type: 'string'},
+        { name: 'text', type: 'string'},
+        { name: 'leaf', type: 'boolean'},
+        { name: 'expanded', type: 'boolean'},
+        { name: 'iconCls', type: 'string'}    ]
+});
+

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.main.dao.prfm.ParamDao">
+
+    <resultMap id="BaseResultMap" type="com.main.pojo.prfm.ParamBean">
+        <id column="PARAMSNO" jdbcType="VARCHAR" property="paramsno"/>
+        <result column="PARAMSKEY" jdbcType="VARCHAR" property="paramskey"/>
+        <result column="PARAMSVALUE" jdbcType="VARCHAR" property="paramsvalue"/>
+        <result column="PARAMSTYPE" jdbcType="VARCHAR" property="paramstype"/>
+        <result column="REVERSE1" jdbcType="VARCHAR" property="reverse1"/>
+        <result column="REVERSE2" jdbcType="VARCHAR" property="reverse2"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        PARAMSNO, PARAMSKEY, PARAMSVALUE, PARAMSTYPE, REVERSE1, REVERSE2
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM PD_PARAMS
+        WHERE PARAMSNO = #{paramsno,jdbcType=VARCHAR}
+    </select>
+    <!-- 通过主键获取BEAN -->
+    <select id="selectByKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM PD_PARAMS
+        WHERE PARAMSKEY = #{paramskey,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 获取分页数据 -->
+    <select id="selectByPage" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        (
+        select
+        <include refid="Base_Column_List"/>
+        ,row_number() over
+        ( order by PARAMSNO asc ) n
+        from PD_PARAMS
+        where 1=1
+        <if test="keyWord != null">
+            AND (PARAMSVALUE LIKE #{keyWord} OR PARAMSKEY LIKE #{keyWord})
+        </if>
+        <if test="paramstype != null">
+            AND PARAMSTYPE = #{paramstype}
+        </if>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+    </select>
+
+    <!-- 获取分页总数 -->
+    <select id="getCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT COUNT(1) AS num
+        FROM PD_PARAMS
+        WHERE 1=1
+        <if test="keyWord != null">
+            AND (PARAMSVALUE LIKE #{keyWord} OR PARAMSKEY LIKE #{keyWord})
+        </if>
+        <if test="paramstype != null">
+            AND PARAMSTYPE = #{paramstype}
+        </if>
+    </select>
+
+    <!-- 删除 -->
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+        DELETE FROM PD_PARAMS WHERE PARAMSNO = #{paramsno,jdbcType=VARCHAR}
+    </delete>
+
+    <!-- 插入 -->
+    <insert id="insert" parameterType="com.main.pojo.prfm.ParamBean">
+        INSERT INTO PD_PARAMS (PARAMSNO,PARAMSKEY,PARAMSVALUE,PARAMSTYPE,REVERSE1,REVERSE2)
+        VALUES (#{paramsno,jdbcType=VARCHAR}, #{paramskey,jdbcType=VARCHAR}, #{paramsvalue,jdbcType=VARCHAR},
+        #{paramstype,jdbcType=VARCHAR}, #{reverse1,jdbcType=VARCHAR}, #{reverse2,jdbcType=VARCHAR})
+    </insert>
+
+    <!-- 插入 -->
+    <insert id="insertSelective" parameterType="com.main.pojo.prfm.ParamBean">
+        INSERT INTO PD_PARAMS
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="formulaname != null">
+                PARAMSNO,
+            </if>
+            <if test="type != null">
+                PARAMSKEY,
+            </if>
+            <if test="isstop != null">
+                PARAMSVALUE,
+            </if>
+            <if test="sqlclob != null">
+                PARAMSTYPE,
+            </if>
+            <if test="tablespace != null">
+                REVERSE1,
+            </if>
+            <if test="tablespace != null">
+                REVERSE2,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="paramsno != null">
+                #{paramsno,jdbcType=VARCHAR},
+            </if>
+            <if test="paramskey != null">
+                #{paramskey,jdbcType=VARCHAR},
+            </if>
+            <if test="paramsvalue != null">
+                #{paramsvalue,jdbcType=VARCHAR},
+            </if>
+            <if test="paramstype != null">
+                #{paramstype,jdbcType=CLOB},
+            </if>
+            <if test="reverse1 != null">
+                #{reverse1,jdbcType=VARCHAR},
+            </if>
+            <if test="reverse2 != null">
+                #{reverse2,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+
+    <!-- 修改 -->
+    <update id="updateByPrimaryKey">
+        UPDATE PD_PARAMS
+        SET paramskey = #{record.paramskey,jdbcType=VARCHAR},
+        paramsvalue = #{record.paramsvalue,jdbcType=VARCHAR},
+        paramstype = #{record.paramstype,jdbcType=VARCHAR},
+        reverse1 = #{record.reverse1,jdbcType=VARCHAR},
+        reverse2 = #{record.reverse2,jdbcType=VARCHAR}
+        WHERE paramsno = #{record.paramsno,jdbcType=VARCHAR}
+    </update>
+
+    <select id="getRela" resultType="java.util.Map">
+        SELECT PARAMSKEY,'1' AS PARAMSVALUE FROM PD_REPORTPARAMRELA WHERE REPID=#{repid}
+    </select>
+
+</mapper>

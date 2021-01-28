@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<!-- class: app-fluid 浮动顶栏 / app 传统布局 / " " boxed布局-->
+<html lang="zh-CN" class="app" xmlns:th=http://www.thymeleaf.org>
+<head>
+    <meta charset="utf-8"/>
+    <title>个人 | 主页</title>
+    <meta name="description" content="个人主页"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=8,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+    <!-- 网页标题前方的小图标 -->
+    <link rel="shortcut icon" th:href="@{/image/minus.png}">
+    <link rel="stylesheet" th:href="@{/style/theme/js/jPlayer/jplayer.flat.css}" type="text/css"/>
+    <link rel="stylesheet" th:href="@{/style/theme/css/bootstrap.css}" type="text/css"/>
+    <!-- toastr -->
+    <link rel="stylesheet" th:href="@{/style/theme/js/toastr/toastr.min.css}" type="text/css"/>
+    <link rel="stylesheet" th:href="@{/style/theme/js/toastr/toastr_oth.css}" type="text/css"/>
+    <!-- contabs -->
+    <link rel="stylesheet" th:href="@{/style/theme/js/tab/contabs.css}" type="text/css"/>
+    <!-- 混搭Metronic样式 -->
+    <link rel="stylesheet" th:href="@{/style/metronic/css/components.min.css}" type="text/css"/>
+    <link rel="stylesheet" th:href="@{/style/metronic/css/profile.min.css}" type="text/css"/>
+    <!-- 主题musik样式 -->
+    <link rel="stylesheet" th:href="@{/style/theme/css/animate.css}" type="text/css"/>
+    <link rel="stylesheet" th:href="@{/style/theme/font-awesome-4.7.0/css/font-awesome.min.css}" type="text/css"/>
+    <link rel="stylesheet" th:href="@{/style/theme/css/simple-line-icons.css}" type="text/css"/>
+    <link rel="stylesheet" th:href="@{/style/theme/css/font.css}" type="text/css"/>
+    <link rel="stylesheet" th:href="@{/style/theme/css/app.css}" type="text/css"/>
+
+    <!-- DatePicker -->
+    <script th:src="@{/extjs/DatePicker/WdatePicker.js}"></script>
+
+    <style type="text/css">
+        .detail-ads3, .detail-ads, [class^="in-ads-"], .wide-bg-dark > .wide-main > .page-in-main:first-child > .page-banner, .wide-main > .page-in-main:first-child + .in-media-side {
+            display: none !important;
+            display: none
+        }</style>
+    <!-- IE8 -->
+    <script th:src="@{/style/theme/js/ie/html5shiv.js}"></script>
+    <script th:src="@{/style/theme/js/ie/respond.min.js}"></script>
+    <script th:src="@{/style/theme/js/ie/excanvas.js}"></script>
+</head>
+<body class="animated fadeInRight">
+<section class="vbox">
+    <!-- /.aside -->
+    <section id="content">
+        <section class="vbox">
+            <section class="scrollable">
+                <section class="hbox stretch">
+                    <aside class="aside-lg bg-light lter b-r">
+                        <section class="vbox">
+                            <section class="scrollable">
+                                <div class="wrapper slim-scroll" data-height="auto">
+                                    <div class="text-center m-b m-t">
+                                        <a href="#" class="thumb-lg">
+                                            <img th:src="@{/style/theme/images/a0.png}" class="img-circle">
+                                        </a>
+                                        <div>
+                                            <div class="h3 m-t-xs m-b-xs" th:text="${me.username}"></div>
+                                            <small class="text-muted">
+                                                <span th:text="${me.deptname}"></span>
+                                                <i class="fa fa-male" th:if="${me.sex}=='1'"></i>
+                                                <i class="fa fa-female" th:if="${me.sex == '2'}"></i>
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="panel wrapper">
+                                        <div class="row text-center">
+                                            <div class="col-xs-6">
+                                                <a href="#">
+                                                    <span class="m-b-xs h4 block" th:text="${me.birthday}"></span>
+                                                    <small class="text-muted">出生日期</small>
+                                                </a>
+                                            </div>
+                                            <div class="col-xs-6">
+                                                <a href="#">
+                                                    <span class="m-b-xs h4 block" th:text="${me.entrytime}"></span>
+                                                    <small class="text-muted">入职时间</small>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group btn-group-justified m-b">
+                                        <a class="btn btn-success btn-rounded">
+                                            <i class="fa fa-unlock-alt"></i>
+                                            <span th:text="${me.userstatusText}"></span>
+                                        </a>
+                                        <a class="btn btn-dark btn-rounded">
+                                            <i class="fa fa-unlink"></i>
+                                            <span th:text="${me.userstyleText}"></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </section>
+                        </section>
+                    </aside>
+                    <div class="page-content-wrapper">
+                        <div class="page-content">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <!-- BEGIN PROFILE CONTENT -->
+                                    <div class="profile-content">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="portlet light ">
+                                                    <div class="portlet-title tabbable-line">
+                                                        <div class="caption caption-md">
+                                                            <i class="icon-globe theme-font hide"></i>
+                                                            <span class="caption-subject font-blue-madison bold uppercase">配置账户</span>
+                                                        </div>
+                                                        <ul class="nav nav-tabs">
+                                                            <li class="active">
+                                                                <a href="#tab_1_1" data-toggle="tab">基本资料</a>
+                                                            </li>
+                                                            <li>
+                                                                <a href="#tab_1_3" data-toggle="tab">密码修改</a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="portlet-body">
+                                                        <div class="tab-content">
+                                                            <!-- PERSONAL INFO TAB -->
+                                                            <div class="tab-pane active" id="tab_1_1">
+                                                                <form role="form" action="#" id="userBaseForm">
+                                                                    <div class="form-group">
+                                                                        <label class="control-label">用户账号*</label>
+                                                                        <input type="text" placeholder=""
+                                                                               readonly="readonly"
+                                                                               name="userid"
+                                                                               th:value="${me.userid}"
+                                                                               class="form-control"/>
+                                                                    </div>
+                                                                    <!--<div class="form-group">-->
+                                                                    <!--<label class="control-label">用户名称*</label>-->
+                                                                    <!--<input type="text" placeholder=""-->
+                                                                    <!--readonly="readonly"-->
+                                                                    <!--name="username"-->
+                                                                    <!--th:value="${me.username}"-->
+                                                                    <!--class="form-control"/>-->
+                                                                    <!--</div>-->
+                                                                    <div class="form-group">
+                                                                        <label class="control-label">电话号码*</label>
+                                                                        <input type="number"
+                                                                               name="phone"
+                                                                               required=""
+                                                                               placeholder="XXX XXXX XXXX"
+                                                                               th:value="${me.phone}"
+                                                                               class="form-control"/></div>
+                                                                    <div class="form-group">
+                                                                        <label class="control-label">邮箱地址*</label>
+                                                                        <input type="email"
+                                                                               placeholder="XXXX@XX.XX"
+                                                                               th:value="${me.email}"
+                                                                               required=""
+                                                                               name="email"
+                                                                               class="form-control"/></div>
+                                                                    <div class="form-group">
+                                                                        <label class="control-label">出生日期*</label>
+                                                                        <input type="text" placeholder="1990-01-01"
+                                                                               name="birthday"
+                                                                               th:value="${me.birthday}"
+                                                                               required=""
+                                                                               onclick="WdatePicker({dateFmt:'yyyy-MM-dd'})"
+                                                                               class="form-control"/></div>
+                                                                    <div class="form-group">
+                                                                        <label class="control-label">身份证号</label>
+                                                                        <input type="number"
+                                                                               placeholder="3XXXXXXXXXXXXXXXXX"
+                                                                               name="idcard"
+                                                                               th:value="${me.idcard}"
+                                                                               class="form-control"/></div>
+                                                                    <div class="margiv-top-10">
+                                                                        <button id="saveUserBaseForm"
+                                                                           class="btn green" style="color: #FFF;background-color: #32c5d2;border-color: #32c5d2" onclick="saveBaseInfo()">
+                                                                            保存修改 </button>
+                                                                        <!--<a href="javascript:;" class="btn default"> 取消 </a>-->
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                            <!-- END PERSONAL INFO TAB -->
+                                                            <!-- CHANGE PASSWORD TAB -->
+                                                            <div class="tab-pane" id="tab_1_3">
+                                                                <form action="#" id="userPasswordForm">
+                                                                    <div class="form-group">
+                                                                        <label class="control-label">当前密码*</label>
+                                                                        <input type="password" name="oldpassword"
+                                                                               class="form-control"/>
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <label class="control-label">新密码*</label>
+                                                                        <input type="password" name="password"
+                                                                               class="form-control"/>
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <label class="control-label">确认密码*</label>
+                                                                        <input type="password" name="repassword"
+                                                                               class="form-control"/>
+                                                                    </div>
+                                                                    <div class="margin-top-10">
+                                                                        <button id="saveUserPasswordForm"
+                                                                           class="btn green" style="color: #FFF;background-color: #32c5d2;border-color: #32c5d2" onclick="savePassword();">
+                                                                            修改密码 </button>
+                                                                        <!--<a href="javascript:;" class="btn default"> 取消 </a>-->
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- END PROFILE CONTENT -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- END CONTENT BODY -->
+                    </div>
+                </section>
+            </section>
+        </section>
+        <a href="#" class="hide nav-off-screen-block" data-toggle="class:nav-off-screen,open"
+           data-target="#nav,html"></a>
+    </section>
+</section>
+</section>
+</section>
+<script th:src="@{/style/theme/js/jquery.min.js}"></script>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<!--<script th:src="@{/extjs/jquery-1.11.3.js}"></script>-->
+
+<script th:src="@{/extjs/jquery.validate.min.js}"></script>
+<!-- Bootstrap -->
+<script th:src="@{/style/theme/js/bootstrap.js}"></script>
+<!-- App -->
+<script th:src="@{/style/theme/js/app.js}"></script>
+<script th:src="@{/style/theme/js/slimscroll/jquery.slimscroll.min.js}"></script>
+<script th:src="@{/style/theme/js/charts/easypiechart/jquery.easy-pie-chart.js}"></script>
+<script th:src="@{/style/theme/js/charts/sparkline/jquery.sparkline.min.js}"></script>
+<!--<script th:src="@{/style/theme/js/app.plugin.js}"></script>-->
+<script type="text/javascript" th:src="@{/style/theme/js/jPlayer/jquery.jplayer.min.js}"></script>
+<script type="text/javascript" th:src="@{/style/theme/js/jPlayer/add-on/jplayer.playlist.min.js}"></script>
+<script type="text/javascript" th:src="@{/style/theme/js/jPlayer/demo.js}"></script>
+<!-- toastr -->
+<script type="text/javascript" th:src="@{/style/theme/js/toastr/toastr.min.js}"></script>
+<script>
+
+    function savePassword() {
+        jQuery("#saveUserPasswordForm").attr("disabled", true);
+        var formData = jQuery("#userPasswordForm").serializeArray();
+        var url = getRootPath() + "/userInfo/updatePassword";
+        jQuery.post(url, formData, function (jsonData) {
+            if (jsonData != null) {
+                var flag = jsonData.flag;
+                var message = jsonData.msg;
+                if (flag == true) {
+                    alert("修改密码成功！即将跳转到登录页面。");
+                    var url = getRootPath() + "/logout";
+                    window.top.location.href = url;
+                } else {
+                    showMessage(3, message, 4, '修改失败');
+                }
+                jQuery("#saveUserPasswordForm").attr("disabled", false);
+            }
+        }, "json");
+    }
+
+    function saveBaseInfo() {
+        jQuery("#saveUserBaseForm").attr("disabled", true);
+        var formData = jQuery("#userBaseForm").serializeArray();
+        var url = getRootPath() + "/userInfo/saveProfile";
+        jQuery.post(url, formData, function (jsonData) {
+            if (jsonData != null) {
+                var flag = jsonData.flag;
+                var message = jsonData.msg;
+                if (flag == true) {
+                    showMessage(1, "修改个人信息成功！", 3, '');
+                } else {
+                    showMessage(3, message, 4, '修改失败');
+                }
+                jQuery("#saveUserBaseForm").attr("disabled", false);
+            }
+        }, "json");
+    }
+
+
+    /**
+     * 终极版本
+     **/
+    function getRootPath() {
+        var strFullPath = window.document.location.href;
+        var strPath = document.location.pathname;
+        if (strPath == null || strPath == '/') {
+            return strFullPath.substring(0, strFullPath.length - 1);
+        } else {
+            var pos = strFullPath.indexOf(strPath);
+            var prePath = strFullPath.substring(0, pos);
+            // var postPath = strPath.substring(0,strPath.substring(1).indexOf("/")+1);
+            return prePath;
+        }
+    }
+
+    /**
+     * 提示框
+     * flag = 0 info
+     * flag = 1 success
+     * flag = 2 warning
+     * flag = 3 error
+     */
+    function showMessage(flag, message, timeOut, title) {
+        if (title == null || title == undefined) {
+            title = '';
+        }
+        if (timeOut != null && timeOut != undefined) {
+            timeOut = timeOut * 1000;
+        }
+        toastr.options = {
+            closeButton: true,
+            progressBar: true,
+            showMethod: 'slideDown',
+            timeOut: timeOut
+        };
+        if (flag == 0) {
+            toastr.info(title, message);
+        } else if (flag == 1) {
+            toastr.success(title, message);
+        } else if (flag == 2) {
+            toastr.warning(title, message);
+        } else {
+            toastr.error(title, message);
+        }
+    }
+</script>
+</body>
+</html>

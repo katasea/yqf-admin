@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.main.dao.platform.DeptInfoDao">
+    <resultMap id="BaseResultMap" type="com.main.pojo.platform.DeptInfo">
+        <id column="pid" property="pid" jdbcType="VARCHAR"/>
+        <result column="companyid" property="companyid" jdbcType="VARCHAR"/>
+        <result column="deptid" property="deptid" jdbcType="VARCHAR"/>
+        <result column="deptname" property="deptname" jdbcType="VARCHAR"/>
+        <result column="zjm" property="zjm" jdbcType="VARCHAR"/>
+        <result column="depttype" property="depttype" jdbcType="VARCHAR"/>
+        <result column="parentid" property="parentid" jdbcType="VARCHAR"/>
+        <result column="isleaf" property="isleaf" jdbcType="VARCHAR"/>
+        <result column="isstop" property="isstop" jdbcType="VARCHAR"/>
+        <result column="inserttime" property="inserttime" jdbcType="VARCHAR"/>
+        <result column="stoptime" property="stoptime" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    pid,companyid,deptid,deptname,zjm,depttype,parentid,isleaf,isstop,inserttime,stoptime
+  </sql>
+
+
+    <sql id="Add_Column_List">
+    pid,companyid,deptid,deptname,zjm,depttype,parentid,isleaf,isstop,inserttime,stoptime
+    </sql>
+    <select id="selectBypid" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_DEPT
+        where pid = #{id}
+    </select>
+    <select id="getAutoGeneralID" resultType="java.util.Map">
+        select max(pid) as id
+        from PM_DEPT
+        where 1=1 and companyid = #{bridge.companyid}
+        <choose>
+            <when test="parentId != null and parentId != 'root' and parentId != 'null' and parentId != '' ">
+                and parentid = #{parentId}
+            </when>
+            <otherwise>
+                and (parentid is null or parentid = '' or parentid = '0')
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getMBCount" resultType="java.util.Map">
+        select count(1) as count
+        from PM_DEPT_MB
+        where 1=1
+        and companyid = #{companyid} and isleaf = 1 and isstop = 0
+        and yearmonth = #{yearmonth}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                deptid like '${keyword}%'
+                or
+                deptname like '${keyword}%'
+                or
+                zjm like '${keyword}%'
+                )
+            </when>
+        </choose>
+        <if test="authcode !=null and authcode != ''">
+            and deptid in (select mtarg from pd_authcenter where companyid = #{companyid} and morig=#{userid} and funcode=#{authcode})
+        </if>
+    </select>
+    <select id="getCount" resultType="java.util.Map">
+        select count(1) as count
+        from PM_DEPT
+        where 1=1
+        and companyid = #{companyid} and isleaf = 1 and isstop = 0
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                deptid like '${keyword}%'
+                or
+                deptname like '${keyword}%'
+                or
+                zjm like '${keyword}%'
+                )
+            </when>
+        </choose>
+    </select>
+
+    <select id="getAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_DEPT
+        where 1=1 and companyid = #{companyid}
+    </select>
+
+    <select id="getLeafs" resultMap="BaseResultMap" parameterType="String">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_DEPT
+        where 1=1 and companyid = #{companyid} and isleaf = 1 and isstop = 0
+    </select>
+
+    <!--如果不是带年份的表，需要自己加入年份过滤，这里不好知道年份字段的数据库名称 -->
+    <select id="validator" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_DEPT
+        where 1=1 and ${key} = #{value} and companyid = #{bridge.companyid}
+    </select>
+
+
+    <select id="get" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_DEPT
+        where 1=1 and companyid = #{companyid}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and isleaf = 1
+                and (
+                deptid like '${keyword}%'
+                or
+                deptname like '%${keyword}%'
+                or
+                zjm like '%${keyword}%'
+                )
+            </when>
+            <otherwise>
+                <choose>
+                    <when test="node != null and node != 'root' and node != 'null' and node != '' ">
+                        and parentid = #{node}
+                    </when>
+                    <otherwise>
+                        and (parentid is null or parentid = '' or parentid = '0')
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+        <!-- [STOP OR INSERT] TIME CONTROLL
+        and (
+        (isstop = 0 and (inserttime = '' or inserttime &lt;= #{bridge.ymstr}))
+        or
+        (stoptime = '' or stoptime &gt; #{bridge.ymstr})
+        )
+        -->
+        order by pid
+    </select>
+
+    <select id="getPage" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        (
+        select<include refid="Base_Column_List"/>,row_number() over
+        (
+        order by
+        pid asc,deptid desc
+        ) n
+        from PM_DEPT
+        where 1=1 and companyid = #{companyid} and isleaf = 1 and isstop = 0
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                deptid like '${keyword}%'
+                or
+                deptname like '%${keyword}%'
+                or
+                zjm like '%${keyword}%'
+                )
+            </when>
+        </choose>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+
+    </select>
+    <select id="getMBPage" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        (
+        select<include refid="Base_Column_List"/>,row_number() over
+        (
+        order by
+        pid asc,deptid desc
+        ) n
+        from PM_DEPT_MB
+        where 1=1 and companyid = #{companyid} and isleaf = 1 and isstop = 0 and yearmonth = #{yearmonth}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                deptid like '${keyword}%'
+                or
+                deptname like '%${keyword}%'
+                or
+                zjm like '%${keyword}%'
+                )
+            </when>
+        </choose>
+        <if test="authcode !=null and authcode != ''">
+            and deptid in (select mtarg from pd_authcenter where companyid = #{companyid} and morig=#{userid} and funcode=#{authcode})
+        </if>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+    </select>
+
+    <insert id="insert" parameterType="map">
+        insert into
+        PM_DEPT
+        (<include refid="Add_Column_List"/>)
+        values(#{pid},#{companyid},#{deptid},#{deptname},#{zjm},#{depttype},#{parentid},#{isleaf},#{isstop},#{inserttime},#{stoptime});
+        insert into
+        PM_DEPT_MB
+        (<include refid="Add_Column_List"/>,yearmonth)
+        values(#{pid},#{companyid},#{deptid},#{deptname},#{zjm},#{depttype},#{parentid},#{isleaf},#{isstop},#{inserttime},#{stoptime},#{yearmonth});
+    </insert>
+
+    <update id="update" parameterType="map">
+  		update
+	    PM_DEPT
+  		set
+				deptname = #{deptname},
+				depttype = #{depttype},
+				inserttime = #{inserttime},
+				stoptime = #{stoptime},
+				isstop = #{isstop}
+				where deptid = #{whereId} and companyid = #{companyid};
+		update
+	    PM_DEPT_MB
+  		set
+				deptname = #{deptname},
+				depttype = #{depttype},
+				inserttime = #{inserttime},
+				stoptime = #{stoptime},
+				isstop = #{isstop}
+				where deptid = #{whereId} and companyid = #{companyid} and yearmonth = #{yearmonth}
+    </update>
+    <update id="changeLeaf" parameterType="map">
+        update
+            PM_DEPT
+        set isleaf = #{value}
+        where deptid = #{id} and companyid=#{companyid};
+         update
+            PM_DEPT_MB
+        set isleaf = #{value}
+        where deptid = #{id} and companyid=#{companyid} and yearmonth=#{yearmonth}
+    </update>
+    <delete id="deleteByPrimaryKey" parameterType="map">
+	    delete from
+	    PM_DEPT
+	    where (deptid = #{id} or parentid = #{id}) and companyid=#{companyid};
+	    delete from
+	    PM_DEPT_MB
+	    where (deptid = #{id} or parentid = #{id}) and companyid=#{companyid} and yearmonth = #{yearmonth};
+
+    </delete>
+    <delete id="deleteAll">
+	    delete from PM_DEPT where 1=1;
+	    delete from PM_DEPT_MB where yearmonth = #{yearmonth}
+    </delete>
+    <insert id="insertDeptInfos" parameterType="java.util.List">
+        insert into dbo.PM_DEPT (<include refid="Add_Column_List"/>)
+        values
+        <foreach collection="depts" item="dept" index="index" separator=",">
+            (#{dept.pid},#{dept.companyid},#{dept.deptid},#{dept.deptname},#{dept.zjm},#{dept.depttype},
+            #{dept.parentid},#{dept.isleaf},#{dept.isstop},#{dept.inserttime},#{dept.stoptime}
+            )
+        </foreach>
+    </insert>
+    <update id="backupMonthData">
+        delete from dbo.PM_DEPT_MB Where yearmonth = #{year_month};
+        insert into dbo.PM_DEPT_MB(<include refid="Add_Column_List"/>,yearmonth)
+        select <include refid="Add_Column_List"/>,#{year_month} as yearmonth from dbo.PM_DEPT
+    </update>
+</mapper>

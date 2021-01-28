@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.main.dao.prfm.BaseDic4ListDao">
+    <resultMap id="BaseResultMap" type="com.main.pojo.prfm.BaseDic4List">
+    	<id column="companyid" property="companyid" jdbcType="VARCHAR"/>
+    	<id column="mkey" property="mkey" jdbcType="VARCHAR"/>
+    	<id column="type" property="type" jdbcType="INTEGER"/>
+	    <result column="mvalue" property="mvalue" jdbcType="VARCHAR"/>
+	    <result column="reverse" property="reverse" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    companyid,mkey,type,mvalue,reverse
+    </sql>
+
+
+    <sql id="Add_Column_List">
+    companyid,mkey,type,mvalue,reverse
+    </sql>
+    <select id="selectBytype" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_DICTIONARY_LIST
+        where type = #{id}
+    </select>
+    <select id="getAutoGeneralID" resultType="java.util.Map">
+        select max(type) as id
+    from PD_DICTIONARY_LIST
+        where 1=1
+    </select>
+    <select id="getCount" resultType="java.util.Map">
+        select count(1) as count
+    from PD_DICTIONARY_LIST
+        where 1=1
+        and companyid = #{companyid}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                  mkey like '${keyword}%'
+                   or
+                  type like '${keyword}%'
+                   or
+                  mvalue like '${keyword}%'
+                   or
+                  reverse like '${keyword}%'
+                                  )
+            </when>
+        </choose>
+    </select>
+
+    <select id="getAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_DICTIONARY_LIST
+        where 1=1 and companyid = #{companyid}
+    </select>
+
+    <!--如果不是带年份的表，需要自己加入年份过滤，这里不好知道年份字段的数据库名称 -->
+    <select id="validator" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_DICTIONARY_LIST
+        where 1=1 and ${key} = #{value} and companyid = #{bridge.companyid}
+    </select>
+
+
+    <select id="get" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_DICTIONARY_LIST
+        where 1=1 and companyid = #{companyid}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+            
+                and (
+                  mkey like '${keyword}%'
+                   or
+                  type like '${keyword}%'
+                   or
+                  mvalue like '${keyword}%'
+                   or
+                  reverse like '${keyword}%'
+                                  )
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+        order by type
+    </select>
+
+    <select id="getPage" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        (
+            select
+            <include refid="Base_Column_List"/>
+            ,row_number() over
+            (
+            order by
+                 companyid,
+                              mkey,
+                              type asc
+            ) n
+           from PD_DICTIONARY_LIST
+            where 1=1
+            and companyid = #{companyid}
+            <choose>
+                <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                    and (
+                          mkey like '${keyword}%'
+                           or
+                          type like '${keyword}%'
+                           or
+                          mvalue like '${keyword}%'
+                           or
+                          reverse like '${keyword}%'
+                                              )
+                </when>
+            </choose>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+    </select>
+
+    <insert id="insert" parameterType="map">
+        insert into
+            PD_DICTIONARY_LIST
+        (
+        <include refid="Add_Column_List"/>
+        )
+        values(#{companyid},#{mkey},#{type},#{mvalue},#{reverse})
+    </insert>
+
+    <update id="update" parameterType="map">
+        update
+            PD_DICTIONARY_LIST
+        set
+                companyid = #{companyid},
+                mkey = #{mkey},
+                type = #{type},
+                mvalue = #{mvalue},
+                reverse = #{reverse}        where companyid = #{companyid} and mkey = #{id}
+    </update>
+    <delete id="deleteByPrimaryKey" parameterType="map">
+        delete from
+            PD_DICTIONARY_LIST
+        where mkey = #{id} and companyid = #{companyid}
+    </delete>
+    <delete id="deleteAll">
+          delete from PD_DICTIONARY_LIST where 1=1
+
+    </delete>
+</mapper>

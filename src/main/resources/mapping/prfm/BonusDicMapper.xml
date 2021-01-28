@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.main.dao.prfm.BonusDicDao">
+    <resultMap id="BaseResultMap" type="com.main.pojo.prfm.BonusDic">
+    	<id column="companyid" property="companyid" jdbcType="VARCHAR"/>
+    	<id column="bh" property="bh" jdbcType="VARCHAR"/>
+    	<id column="year" property="year" jdbcType="VARCHAR"/>
+    	<id column="month" property="month" jdbcType="VARCHAR"/>
+	    <result column="name" property="name" jdbcType="VARCHAR"/>
+	    <result column="grade" property="grade" jdbcType="INTEGER"/>
+	    <result column="isleaf" property="isleaf" jdbcType="INTEGER"/>
+	    <result column="formula" property="formula" jdbcType="VARCHAR"/>
+	    <result column="parentid" property="parentid" jdbcType="VARCHAR"/>
+	    <result column="isstop" property="isstop" jdbcType="INTEGER"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    companyid,bh,year,month,name,grade,isleaf,formula,parentid,isstop
+    </sql>
+
+
+    <sql id="Add_Column_List">
+    companyid,bh,year,month,name,grade,isleaf,formula,parentid,isstop
+    </sql>
+    <select id="selectBybh" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_BONUSDIC
+        where bh = #{id}
+    </select>
+    <select id="getAutoGeneralID" resultType="java.util.Map">
+        select max(bh) as id
+    from PD_BONUSDIC
+        where 1=1 and companyid = #{bridge.companyid} and year = #{bridge.year} and month = ${bridge.month}
+        <choose>
+            <when test="parentId != null and parentId != 'root' and parentId != 'null' and parentId != '' ">
+                and parentid = #{parentId}
+            </when>
+            <otherwise>
+                and (parentid is null or parentid = '' or parentid = '0')
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getCount" resultType="java.util.Map">
+        select count(1) as count
+    from PD_BONUSDIC
+        where 1=1
+        and companyid = #{companyid} and year = #{year} and month = ${month}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                and (
+                  bh like '${keyword}%'
+                   or
+                  name like '${keyword}%'
+                                  )
+            </when>
+        </choose>
+    </select>
+
+    <select id="getAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_BONUSDIC
+        where 1=1 and companyid = #{companyid} and year = #{year} and month = ${month}
+    </select>
+
+    <!--如果不是带年份的表，需要自己加入年份过滤，这里不好知道年份字段的数据库名称 -->
+    <select id="validator" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_BONUSDIC
+        where 1=1 and ${key} = #{value} and companyid = #{bridge.companyid} and year = #{bridge.year}
+        and month = #{bridge.month}
+    </select>
+
+
+    <select id="get" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+    from PD_BONUSDIC
+        where 1=1 and companyid = #{companyid} and year = #{year} and month = ${month}
+        <choose>
+            <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+            and isleaf = 1
+                and (
+                  bh like '${keyword}%'
+                   or
+                  name like '${keyword}%'
+                                  )
+            </when>
+            <otherwise>
+                <choose>
+                    <when test="node != null and node != 'root' and node != 'null' and node != '' ">
+                        and parentid = #{node}
+                    </when>
+                    <otherwise>
+                        and (parentid is null or parentid = '' or parentid = '0')
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+        order by bh
+    </select>
+
+    <select id="getPage" resultMap="BaseResultMap" parameterType="map">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        (
+            select
+            <include refid="Base_Column_List"/>
+            ,row_number() over
+            (
+            order by
+                 companyid,
+                              bh,
+                              year,
+                              month asc
+            ) n
+           from PD_BONUSDIC
+            where 1=1
+            and companyid = #{companyid} and year = #{year} and month = ${month}
+            <choose>
+                <when test="keyword != null and keyword != '' and keyword != 'null' and keyword != '请输入关键字'">
+                    and (
+                          bh like '${keyword}%'
+                           or
+                          name like '${keyword}%'
+                                              )
+                </when>
+            </choose>
+        ) a
+        where a.n &gt; #{start}
+        and a.n &lt;= #{end}
+    </select>
+
+    <insert id="insert" parameterType="map">
+        insert into
+            PD_BONUSDIC
+        (
+        <include refid="Add_Column_List"/>
+        )
+        values(#{companyid},#{bh},#{year},#{month},#{name},#{grade},#{isleaf},#{formula},#{parentid},#{isstop})
+    </insert>
+
+    <update id="update" parameterType="map">
+        update
+            PD_BONUSDIC
+        set
+                companyid = #{companyid},
+                bh = #{bh},
+                year = #{year},
+                month = #{month},
+                name = #{name},
+                grade = #{grade},
+                formula = #{formula},
+                isstop = #{isstop}        where bh = #{whereId} and companyid = #{companyid} and year = #{year} and month = ${month}
+    </update>
+    <update id="changeLeaf" parameterType="map">
+        update
+            PD_BONUSDIC
+        set isleaf = #{value}
+        where bh = #{id} and companyid = #{companyid} and year = #{year} and month = ${month}
+    </update>
+    <delete id="deleteByPrimaryKey" parameterType="map">
+        delete from
+            PD_BONUSDIC
+        where (bh = #{id}
+            or parentid = #{id} ) and companyid = #{companyid} and year = #{year} and month = ${month}
+    </delete>
+    <delete id="deleteAll">
+      delete from PD_BONUSDIC where 1=1 and companyid = #{companyid} and year = #{year} and month = ${month}
+    </delete>
+
+  <insert id="copyLastYear">
+      insert into PD_BONUSDIC ( <include refid="Add_Column_List"/>)
+      select
+      <include refid="Add_Column_List"/> from
+      PD_BONUSDIC where 1=1 and companyid = #{companyid} and year = #{year} and month = ${month}
+  </insert>
+</mapper>
