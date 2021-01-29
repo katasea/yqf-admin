@@ -173,19 +173,19 @@
     }
 
     /**
-     * 终极版本
-     **/
+     * 获取项目根路径
+     * @returns {string}
+     */
     function getRootPath() {
         var strFullPath = window.document.location.href;
         var strPath = document.location.pathname;
-        if (strPath == null || strPath == '/') {
-            return strFullPath.substring(0, strFullPath.length - 1);
-        } else {
-            var pos = strFullPath.indexOf(strPath);
-            var prePath = strFullPath.substring(0, pos);
-            // var postPath = strPath.substring(0,strPath.substring(1).indexOf("/")+1);
-            return prePath;
+        if(!(strPath.lastIndexOf("/") === strPath.indexOf("/"))) {
+            strPath = strPath.substring(0,strPath.lastIndexOf("/"));
         }
+        var pos = strFullPath.indexOf(strPath);
+        var prePath = strFullPath.substring(0, pos);
+        // var postPath = strPath.substring(0,strPath.substring(1).indexOf("/")+1);
+        return prePath+strPath;
     }
 
     /**

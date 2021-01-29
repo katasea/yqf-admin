@@ -24,6 +24,7 @@
     <script type="text/javascript" th:src="@{/extjs/ext5/packages/ext-ux/Spotlight.js}"></script>
     <script type="text/javascript" th:src="@{/extjs/ext5/ext-locale-zh_CN.js}"></script>
     <script type="text/javascript" th:src="@{/extjs/DatePicker/WdatePicker.js}"></script>
+    <script type="text/javascript" th:src="@{/style/theme/js/widgets.js}"></script>
     <script type="text/javascript">
 
         var contextPath = getRootPath();
@@ -296,27 +297,7 @@
             return s.replace(/^\./, "0.");
         }
 
-        /**
-         * 获取项目根路径
-         */
-        function getRootPath() {
-            var strFullPath = window.document.location.href;
-            var strPath = document.location.pathname;
-            if (strPath == null || strPath == '/') {
-                return strFullPath;
-            } else {
-                var pos = strFullPath.indexOf(strPath);
-                var prePath = strFullPath.substring(0, pos);
-                // var postPath = strPath.substring(0,strPath.substring(1).indexOf("/")+1);
-                return prePath;
-            }
-        }
 
-        function getHostIP() {
-            var hrefs = getRootPath();
-            var temp = hrefs.substring(6);
-            return hrefs.substring(0, temp.indexOf(":") + 6);
-        }
     </script>
 </head>
 <body>

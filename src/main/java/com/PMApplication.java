@@ -49,7 +49,7 @@ public class PMApplication {
 	@Bean
 	public SocketIOServer socketIOServer() {
 		Configuration config = new Configuration();
-		config.setHostname(host);
+//		config.setHostname(host);
 		config.setPort(port);
 
 		//该处可以用来进行身份验证
@@ -116,7 +116,7 @@ public class PMApplication {
 	}
 
 	public static void main(String[] args) {
-		SpringApplication.run(PMApplication.class, args);  
+		SpringApplication.run(PMApplication.class, args);
 	}
 
 }

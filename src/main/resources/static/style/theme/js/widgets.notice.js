@@ -1,4 +1,4 @@
-var socket = io.connect(getHostIP() + ':'+socket_port+'?clientid=' + userid);
+var socket = io.connect(getHostWithoutPort() + ':'+socket_port+'?clientid=' + userid);
 socket.on('connect', function () {
     output(1, '<span class="connect-msg"> 你好' + username + '，欢迎登陆系统</span>');
 });
@@ -12,7 +12,7 @@ socket.on('disconnect', function () {
 
 function output(flag, message) {
     //toast显示
-    showMessage(flag, message, 2, '');
+    showMessage(flag, message, 1, '');
 }
 
 /**
@@ -29,11 +29,12 @@ function tipMsg(data) {
         pngstr = "clock";
     }
 
-    var url = getRootPath()+"/noticeInfo/view/"+data.pkid;
+    var baseUrl = getRootPath();
+    var url = baseUrl+"/noticeInfo/view/"+data.pkid;
     var $msg = '<a href="javascript:void(0)" onclick="javascript:showNoticeDetail(\''+data.pkid+'\',\''+data.title+'\',\''+data.content+'\',\''+data.fromwhoname+'\',\''+data.senttime+'\');" class="media list-group-item">' +
         '<span class="pull-left thumb-sm text-center">' +
         // '<i class="fa fa-envelope-o fa-2x text-success"></i>' +
-        '<img src="/style/theme/images/' + pngstr + '.png" alt="..." class="img-circle">' +
+        '<img src="'+baseUrl+'/style/theme/images/' + pngstr + '.png" alt="..." class="img-circle">' +
         '</span>' +
         '<span class="media-body block m-b-none">' +
         '通知：' + data.title + '<br>' +

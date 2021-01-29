@@ -1,24 +1,14 @@
 package com.config;
-import com.common.auto.db.AutoFixTable;
+
 import com.common.CommonUtil;
 import com.common.Global;
-import com.main.pojo.platform.Bridge;
-import com.main.service.prfm.BaseFormulaService;
-import org.apache.log4j.Logger;
-import org.slf4j.MDC;
-
-import java.io.IOException;
-import java.util.Date;
+import com.common.auto.db.AutoFixTable;
 
 import javax.annotation.Resource;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.Date;
 
 @WebFilter(filterName="myFilter",urlPatterns="/*")
 public class MyFilter implements Filter {
@@ -26,8 +16,6 @@ public class MyFilter implements Filter {
     @Resource
     private AutoFixTable autoFixTable;
 
-    @Resource
-    private BaseFormulaService bb;
 
     @Override
     public void destroy() {

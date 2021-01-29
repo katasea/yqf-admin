@@ -29,7 +29,7 @@ import com.main.dao.platform.DeptInfoDao;
 import com.main.pojo.platform.Bridge;
 import com.main.pojo.platform.DeptInfo;
 import com.main.pojo.platform.StateInfo;
-import com.main.pojo.result.DeptTreeInfo;
+import com.main.pojo.platform.DeptTreeInfo;
 import com.main.service.platform.BaseDicInfoService;
 import com.main.service.platform.DeptInfoService;
 //import com.main.service.platform.QuartzServer;
@@ -449,7 +449,7 @@ public class DeptInfoServiceImpl implements DeptInfoService{
 	public void backupMonthData(String year_month) {
 		deptInfoDao.backupMonthData(year_month);
 	}
-	
+
 
     public List<Map<String,Object>> getDeptTree(Bridge bridge){
     	List<Map<String,Object>> resultList =new ArrayList<Map<String,Object>>();
@@ -539,8 +539,8 @@ public class DeptInfoServiceImpl implements DeptInfoService{
         return result;
 
     }
-    
-    
+
+
 
 //	@Override
 //	public void execute(JobExecutionContext context) throws JobExecutionException {

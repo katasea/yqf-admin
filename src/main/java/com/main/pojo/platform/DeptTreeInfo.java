@@ -1,14 +1,12 @@
-package com.main.pojo.result;
+package com.main.pojo.platform;
 
 import java.util.List;
 import java.util.Map;
 
-import com.main.pojo.platform.DeptInfo;
-
-public class DeptTreeInfo{
+public class DeptTreeInfo {
 	private List<DeptInfo> sub;
 	private DeptInfo deptInfo;
-	List<Map<String,Object>> childrenList;
+	List<Map<String, Object>> childrenList;
 public List<Map<String, Object>> getChildrenList() {
 		return childrenList;
 	}

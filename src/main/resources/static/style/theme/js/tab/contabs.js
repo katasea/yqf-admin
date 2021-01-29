@@ -121,7 +121,7 @@ $(function () {
         if (k) {
             var p = '<a href="javascript:void(0)" class="active J_menuTab" data-id="' + o + '">' + l + ' <i class="fa fa-times-circle"></i></a>';
             $(".J_menuTab").removeClass("active");
-            var n = '<iframe class="J_iframe" name="iframe' + m + '" width="100%" height="550px" src="' + o + '" onload="changeFrameHeight(this)" scrolling="true" frameborder="0" data-id="' + o + '" seamless></iframe>';
+            var n = '<iframe class="J_iframe" name="iframe' + m + '" width="100%" height="550px" src="' +getHostPath()+ o + '" onload="changeFrameHeight(this)" scrolling="true" frameborder="0" data-id="' + o + '" seamless></iframe>';
             $(".J_mainContent").find("iframe.J_iframe").hide().parents(".J_mainContent").append(n);
             $(".J_menuTabs .page-tabs-content").append(p);
             g($(".J_menuTab.active"));

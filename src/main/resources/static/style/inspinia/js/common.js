@@ -149,23 +149,29 @@ var modalHide = function(flag,animateName, callback){
 
 /**
  * 获取项目根路径
+ * @returns {string}
  */
 function getRootPath() {
     var strFullPath = window.document.location.href;
     var strPath = document.location.pathname;
-    if(strPath == null || strPath =='/') {
+    if(!(strPath.lastIndexOf("/") === strPath.indexOf("/"))) {
+        strPath = strPath.substring(0,strPath.lastIndexOf("/"));
+    }
+    var pos = strFullPath.indexOf(strPath);
+    var prePath = strFullPath.substring(0, pos);
+    // var postPath = strPath.substring(0,strPath.substring(1).indexOf("/")+1);
+    return prePath+strPath;
+}
+function getHostPath() {
+    var strFullPath = window.document.location.href;
+    var strPath = document.location.pathname;
+    if (strPath == null || strPath == '/') {
         return strFullPath;
-    }else {
+    } else {
         var pos = strFullPath.indexOf(strPath);
-        var prePath = strFullPath.substring(0,pos);
-        // var postPath = strPath.substring(0,strPath.substring(1).indexOf("/")+1);
+        var prePath = strFullPath.substring(0, pos);
         return prePath;
     }
-}
-function getHostIP() {
-    var hrefs = getRootPath();
-    var temp = hrefs.substring(6);
-    return hrefs.substring(0,temp.indexOf(":")+6);
 }
 var modalDataInit = function(info){
     //alert(info);
