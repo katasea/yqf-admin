@@ -124,6 +124,6 @@
 
     <!-- 通过用户主键获取角色信息 -->
     <select id="getRoleByUserid" resultType="java.util.Map">
-        select * from dbo.pm_user_role where userpkid = #{userpkid}
+        select * from pm_user_role where userpkid = #{userpkid}
     </select>
 </mapper>

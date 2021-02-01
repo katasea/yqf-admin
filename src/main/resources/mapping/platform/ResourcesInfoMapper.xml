@@ -157,20 +157,20 @@
 	    where pkid = #{id}
             or parentid = #{id}
   </delete>
-    <!-- 加载指定用户的资源信息-->
-    <select id="loadUserRes" resultType="com.main.pojo.platform.ResourcesInfo">
+<!--    &lt;!&ndash; 加载指定用户的资源信息&ndash;&gt;-->
+<!--    <select id="loadUserRes" resultType="com.main.pojo.platform.ResourcesInfo">-->
 
-    </select>
-    <!-- 加载所有资源信息-->
-    <select id="queryAll" resultType="com.main.pojo.platform.ResourcesInfo">
+<!--    </select>-->
+<!--    &lt;!&ndash; 加载所有资源信息&ndash;&gt;-->
+<!--    <select id="queryAll" resultType="com.main.pojo.platform.ResourcesInfo">-->
 
-    </select>
+<!--    </select>-->
     <!-- 通过角色主键获取资源菜单 -->
     <select id="getResourcesByRole" resultType="java.util.Map">
-        select * from dbo.pm_role_res where rolepkid = #{rolepkid}
+        select * from pm_role_res where rolepkid = #{rolepkid}
     </select>
     <!-- 通过用户主键获取资源菜单 -->
     <select id="getResourcesByUser" resultType="java.util.Map">
-        select * from dbo.pm_user_res where userpkid = #{userpkid}
+        select * from pm_user_res where userpkid = #{userpkid}
     </select>
 </mapper>

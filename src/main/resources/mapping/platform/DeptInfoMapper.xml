@@ -254,7 +254,7 @@
 	    delete from PM_DEPT_MB where yearmonth = #{yearmonth}
     </delete>
     <insert id="insertDeptInfos" parameterType="java.util.List">
-        insert into dbo.PM_DEPT (<include refid="Add_Column_List"/>)
+        insert into PM_DEPT (<include refid="Add_Column_List"/>)
         values
         <foreach collection="depts" item="dept" index="index" separator=",">
             (#{dept.pid},#{dept.companyid},#{dept.deptid},#{dept.deptname},#{dept.zjm},#{dept.depttype},
@@ -263,8 +263,8 @@
         </foreach>
     </insert>
     <update id="backupMonthData">
-        delete from dbo.PM_DEPT_MB Where yearmonth = #{year_month};
-        insert into dbo.PM_DEPT_MB(<include refid="Add_Column_List"/>,yearmonth)
-        select <include refid="Add_Column_List"/>,#{year_month} as yearmonth from dbo.PM_DEPT
+        delete from PM_DEPT_MB Where yearmonth = #{year_month};
+        insert into PM_DEPT_MB(<include refid="Add_Column_List"/>,yearmonth)
+        select <include refid="Add_Column_List"/>,#{year_month} as yearmonth from PM_DEPT
     </update>
 </mapper>

@@ -3,7 +3,7 @@ function changeFrameHeight(frame) {
 }
 
 //IE8 需要这句话，兼容性问题。
-document.getElementsByName("iframe0")[0].height = document.documentElement.clientHeight - 30 - 42 - 69;
+// document.getElementsByName("iframe0")[0].height = document.documentElement.clientHeight - 30 - 42 - 69;
 /**
  * 提示框
  * flag = 0 info

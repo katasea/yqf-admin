@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.main.dao.platform.UserResRoleRelaDao">
     <insert id="manageRoleRes" parameterType="java.util.List">
-        insert into dbo.PM_ROLE_RES (rolepkid, respkid)
+        insert into PM_ROLE_RES (rolepkid, respkid)
         values
         <foreach collection="list" item="item" index="index" separator=",">
             (#{item.rolepkid,jdbcType=VARCHAR}, #{item.respkid,jdbcType=VARCHAR})
@@ -10,7 +10,7 @@
     </insert>
 
     <insert id="manageRoleUsers" parameterType="java.util.List">
-        insert into dbo.PM_USER_ROLE (userpkid, rolepkid)
+        insert into PM_USER_ROLE (userpkid, rolepkid)
         values
         <foreach collection="list" item="item" index="index" separator=",">
             (#{item.userpkid,jdbcType=VARCHAR}, #{item.rolepkid,jdbcType=VARCHAR})
@@ -18,7 +18,7 @@
     </insert>
 
     <insert id="manageUserRes" parameterType="java.util.List">
-        insert into dbo.PM_USER_RES (userpkid, respkid)
+        insert into PM_USER_RES (userpkid, respkid)
         values
         <foreach collection="list" item="item" index="index" separator=",">
             (#{item.userpkid,jdbcType=VARCHAR}, #{item.respkid,jdbcType=VARCHAR})
@@ -26,15 +26,15 @@
     </insert>
 
     <delete id="deleteRoleRes">
-        delete from dbo.PM_ROLE_RES where rolepkid in (${rolepkids})
+        delete from PM_ROLE_RES where rolepkid in (${rolepkids})
     </delete>
 
     <delete id="deleteUserRole">
-        delete from dbo.PM_USER_ROLE where userpkid = #{userpkid}
+        delete from PM_USER_ROLE where userpkid = #{userpkid}
     </delete>
 
     <delete id="deleteUserRes">
-        delete from dbo.PM_USER_RES where userpkid = #{userpkid}
+        delete from PM_USER_RES where userpkid = #{userpkid}
     </delete>
 
 </mapper>
