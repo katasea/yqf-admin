@@ -15,6 +15,7 @@ import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 对象控制层
@@ -36,6 +38,11 @@ import java.util.*;
 public class UserInfoController {
 	@Resource
 	private UserInfoService userInfoService;
+
+	@Value("${spring.redis.expire:86400}")
+	private long ttl;
+	@Resource
+	private RedisTemplate<String,Object> redisTemplate;
 	/**
 	 * 当启用多个app应用
 	 * 可以知道是哪个端口的应用
@@ -46,7 +53,7 @@ public class UserInfoController {
 	/**
 	 * 登录页面
 	 */
-	@RequestMapping("/")
+	@RequestMapping(value = {"/","/login"})
 	public String toRoot(Model model) {
 		Logger.getLogger(this.getClass()).info("PORT:" + port);
 		String date = Global.year_month_day.format(new Date());
@@ -54,23 +61,16 @@ public class UserInfoController {
 		return "login";
 	}
 
-	/**
-	 * 登录页面
-	 */
-	@RequestMapping("/login")
-	public String toLogin(Model model) {
-		Logger.getLogger(this.getClass()).info("PORT:" + port);
-		String date = Global.year_month_day.format(new Date());
-		model.addAttribute("date", date);
-		return "login";
-	}
+
 
 	/**
 	 * 登出页面
 	 */
 	@RequestMapping("/logout")
-	public String toLogout(Model model) {
+	public String toLogout(Model model,HttpServletRequest request) {
 		Logger.getLogger(this.getClass()).info("PORT:" + port);
+		String login_token = (String) request.getSession().getAttribute("login_token");
+		redisTemplate.delete(login_token);
 		SecurityUtils.getSubject().logout();
 		String date = Global.year_month_day.format(new Date());
 		model.addAttribute("date", date);
@@ -92,7 +92,13 @@ public class UserInfoController {
 		Subject subject = SecurityUtils.getSubject();
 		try {
 			subject.login(token);
-			request.getSession().setAttribute("loginSession", new LoginInfo(request));
+			LoginInfo loginInfo = new LoginInfo(request);
+			request.getSession().setAttribute("loginSession", loginInfo);
+			//当验证都通过后，把用户信息放redis里面
+			String login_token = Global.createUUID();
+			request.getSession().setAttribute("login_token", login_token);
+			redisTemplate.opsForValue().set(login_token,loginInfo,ttl, TimeUnit.SECONDS);
+			stateInfo.setData(login_token);
 		} catch (UnknownAccountException e) {
 			stateInfo.setFlag(false);
 			stateInfo.setMsg(this.getClass(), "账号或密码错误!", null);

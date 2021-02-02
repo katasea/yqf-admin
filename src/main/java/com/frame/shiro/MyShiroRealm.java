@@ -1,5 +1,6 @@
 package com.frame.shiro;
 
+import com.common.Global;
 import com.main.dao.platform.SystemDao;
 import com.main.pojo.platform.ResourcesInfo;
 import com.main.pojo.platform.RoleInfo;
@@ -15,6 +16,7 @@ import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -83,6 +85,7 @@ public class MyShiroRealm extends AuthorizingRealm {
         Session session = SecurityUtils.getSubject().getSession();
         session.setAttribute("userSession", user);
         session.setAttribute("userSessionId", user.getUserid());
+
         return authenticationInfo;
     }
 }

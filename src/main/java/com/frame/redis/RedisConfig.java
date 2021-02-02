@@ -6,8 +6,16 @@ import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+
+import java.time.Duration;
 
 /**
  * redis配置信息
@@ -17,10 +25,10 @@ import redis.clients.jedis.JedisPoolConfig;
 public class RedisConfig extends CachingConfigurerSupport {
     @Value("${spring.redis.host}")
     private String host;
-    
+
     @Value("${spring.redis.password}")
     private String password;
-    
+
     @Value("${spring.redis.port}")
     private int port;
 
@@ -43,6 +51,5 @@ public class RedisConfig extends CachingConfigurerSupport {
         JedisPool jedisPool = new JedisPool(jedisPoolConfig, host, port,timeout,password);
         return jedisPool;
     }
-
 }
 

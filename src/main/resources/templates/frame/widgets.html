@@ -234,7 +234,7 @@
                                                     <li th:each="resource3:${session.loginSession.resources}" th:if="${resource3.isleaf == 1}">
                                                         <!-- 四级菜单  父节点  暂时约定程序最多四级-->
                                                         <!-- 四级菜单  子节点 -->
-                                                        <a class="J_menuItem" th:href="${resource3.resurl}"
+                                                        <a class="J_menuItem" th:href="${resource3.resurl+'?token='+token}"
                                                            th:if="${resource3.parentid == resource2.pkid} and ${resource3.isleaf == 1}">
                                                             <i style="margin-left:6px;" th:class="|fa fa-${resource3.fa} text-xs|"></i><span
                                                                 th:text="${resource3.name}"></span>
@@ -242,7 +242,7 @@
                                                     </li>
                                                 </ul>
                                                 <!-- 三级菜单 子节点 -->
-                                                <a class="J_menuItem" th:href="${resource2.resurl}"
+                                                <a class="J_menuItem" th:href="${resource2.resurl+'?token='+token}"
                                                    th:if="${resource2.parentid == resource1.pkid} and ${resource2.isleaf == 1}">
                                                     <i style="margin-left:1px;" th:class="|fa fa-${resource2.fa} text-xs|"></i><span
                                                         th:text="${resource2.name}"></span>
@@ -250,7 +250,7 @@
                                             </li>
                                         </ul>
                                         <!-- 二级菜单  子节点 -->
-                                        <a class="J_menuItem" th:href="${resource1.resurl}"
+                                        <a class="J_menuItem" th:href="${resource1.resurl+'?token='+token}"
                                            th:if="${resource1.parentid == resource.pkid} and ${resource1.isleaf == 1}">
                                             <i th:class="|fa fa-${resource1.fa} text-xs|"></i><span class="font-bold"
                                                                                                     th:text="${resource1.name}"></span>
@@ -336,7 +336,7 @@
                                     </li>
                                 </ul>
                             </div>
-                            <a href="/logout" class="roll-nav roll-right J_tabExit"><i class="fa fa fa-sign-out"></i> 退出</a>
+                            <a th:href="@{/logout}" class="roll-nav roll-right J_tabExit"><i class="fa fa fa-sign-out"></i> 退出</a>
                         </div>
                         <div class="row J_mainContent" id="content-main">
                             <iframe class="J_iframe" name="iframe0" width="100%" height="600px"
@@ -434,6 +434,7 @@
 <script type="text/javascript" th:src="@{/style/theme/js/widgets.js}"></script>
 <script th:inline="javascript">
     var userid = [[${session.loginSession.userid}]];
+    var token = [[${token}]];
     var username = [[${session.loginSession.username}]];
     var socket_port = [[${socket_port}]];
 </script>

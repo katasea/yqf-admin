@@ -86,6 +86,7 @@ public class BaseController {
 		//获取角色菜单等登录信息
 		LoginInfo loginInfo = (LoginInfo) request.getSession().getAttribute("loginSession");
 		UserInfo user = (UserInfo) request.getSession().getAttribute("userSession");
+		String login_token = (String) request.getSession().getAttribute("login_token");
 		userInfoService.getLoginInfo(user, loginInfo);
 		request.getSession().setAttribute("loginSession", loginInfo);
 
@@ -94,6 +95,7 @@ public class BaseController {
 		model.addAttribute("baseUrl", basePath);
 		model.addAttribute("socket_port", socket_port);
 		model.addAttribute("version", Global.VERSION);
+		model.addAttribute("token", login_token);
 		//未读消息  state 0 表示未读 1 表示已读
 		List<NoticeInfo> noticeInfos = nis.getNoticeWithState(user.getUserid(), new Bridge(request), 0);
 		int noticeNum = noticeInfos == null ? 0 : noticeInfos.size();

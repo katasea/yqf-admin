@@ -158,6 +158,7 @@
                 if (jsonData != null) {
                     var flag = jsonData.flag;
                     var message = jsonData.msg;
+                    var login_token = jsonData.data;
                     if (flag == true) {
                         var url = getRootPath() + "/main";
                         window.top.location.href = url;
