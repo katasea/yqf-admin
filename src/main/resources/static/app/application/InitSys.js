@@ -46,6 +46,6 @@ Ext.application({
                 xtype: 'myViewInitSysForm'
             }]
         });
-        mask = new Ext.LoadMask( Ext.getBody().component,{msg:"请稍候片刻..."});
+        mask = new Ext.LoadMask( Ext.getBody(),{msg:"请稍候片刻..."});
     }
 });
