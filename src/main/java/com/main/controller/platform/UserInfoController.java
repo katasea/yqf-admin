@@ -1,5 +1,6 @@
 package com.main.controller.platform;
 
+import com.alibaba.fastjson.JSONObject;
 import com.common.CommonUtil;
 import com.common.Global;
 import com.main.pojo.platform.Bridge;
@@ -97,7 +98,7 @@ public class UserInfoController {
 			//当验证都通过后，把用户信息放redis里面
 			String login_token = Global.createUUID();
 			request.getSession().setAttribute("login_token", login_token);
-			redisTemplate.opsForValue().set(login_token,loginInfo,ttl, TimeUnit.SECONDS);
+			redisTemplate.opsForValue().set(login_token, JSONObject.toJSONString(loginInfo),ttl, TimeUnit.SECONDS);
 			stateInfo.setData(login_token);
 		} catch (UnknownAccountException e) {
 			stateInfo.setFlag(false);
