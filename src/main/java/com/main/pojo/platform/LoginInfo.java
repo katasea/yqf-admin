@@ -13,6 +13,8 @@ import java.util.List;
  */
 public class LoginInfo implements Serializable {
 	private static final long serialVersionUID = 5780371099533288435L;
+	private String ymstr;
+	private boolean isAdmin;
 	private String date;
 	private String month;
 	private String year;
@@ -35,6 +37,7 @@ public class LoginInfo implements Serializable {
 			this.deptid = user.getDeptid();
 			this.deptname = user.getDeptname();
 			this.roles = user.getRoleInfos();
+			this.setAdmin(user.isAdmin());
 		}
 		/**
 		 * 操作的业务日期
@@ -46,6 +49,7 @@ public class LoginInfo implements Serializable {
 			this.month = date.split("-")[1];
 			this.date = date;
 		}
+		this.setYmstr(this.getYear()+"-"+this.getMonth());
 	}
 
 	public String getDate() {
@@ -66,6 +70,22 @@ public class LoginInfo implements Serializable {
 
 	public String getYear() {
 		return year;
+	}
+
+	public String getYmstr() {
+		return ymstr;
+	}
+
+	public void setYmstr(String ymstr) {
+		this.ymstr = ymstr;
+	}
+
+	public boolean isAdmin() {
+		return isAdmin;
+	}
+
+	public void setAdmin(boolean admin) {
+		isAdmin = admin;
 	}
 
 	public void setYear(String year) {
